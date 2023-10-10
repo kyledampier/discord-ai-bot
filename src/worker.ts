@@ -8,40 +8,41 @@
  * Learn more at https://developers.cloudflare.com/workers/
  */
 
+import { drizzle } from 'drizzle-orm/d1';
+import * as schema from './schema';
 import { InteractionResponseType, InteractionType, verifyKey } from 'discord-interactions';
 import { registerCommand } from './commands/register';
 import { PongConfig, pong } from './commands/pong';
 import { TriviaConfig, trivia } from './commands/trivia';
 import { DiscordMessage } from './types';
 import { challengerResponse } from './commands/challengerResponse';
+import router from './api/router';
 
 export interface Env {
-	// Example binding to KV. Learn more at https://developers.cloudflare.com/workers/runtime-apis/kv/
-	// MY_KV_NAMESPACE: KVNamespace;
-	//
-	// Example binding to Durable Object. Learn more at https://developers.cloudflare.com/workers/runtime-apis/durable-objects/
-	// MY_DURABLE_OBJECT: DurableObjectNamespace;
-	//
-	// Example binding to R2. Learn more at https://developers.cloudflare.com/workers/runtime-apis/r2/
-	// MY_BUCKET: R2Bucket;
-	//
-	// Example binding to a Service. Learn more at https://developers.cloudflare.com/workers/runtime-apis/service-bindings/
-	// MY_SERVICE: Fetcher;
-	//
-	// Example binding to a Queue. Learn more at https://developers.cloudflare.com/queues/javascript-apis/
-	// MY_QUEUE: Queue;
-
-	USERS: KVNamespace;
-	DB: D1Database;
-
 	DISCORD_APP_ID: string;
 	DISCORD_APP_PUBLIC_KEY: string;
 	DISCOED_APP_SECRET: string;
 	DISCORD_APP_TOKEN: string;
+
+	USERS: KVNamespace;
+	DB: D1Database;
 }
 
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+
+		const db = drizzle(env.DB, {
+			schema
+		});
+
+
+		const url = new URL(request.url);
+
+		// manage api routes
+		if (url.pathname.startsWith('/api')) {
+			return router.handle(request, env, ctx);
+		}
+
 		// check if post request
 		if (request.method !== 'POST') {
 			return new Response(JSON.stringify({}), {
