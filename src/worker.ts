@@ -10,9 +10,9 @@
 
 import { InteractionResponseType, InteractionType, verifyKey } from 'discord-interactions';
 import { registerCommand } from './commands/register';
-import { CommandConfig } from './types/command';
 import { PongConfig, pong } from './commands/pong';
-import { GenerateConfig, generate } from './commands/generate';
+import { TriviaConfig, trivia } from './commands/trivia';
+import { DiscordMessage } from './types';
 
 export interface Env {
 	// Example binding to KV. Learn more at https://developers.cloudflare.com/workers/runtime-apis/kv/
@@ -34,8 +34,6 @@ export interface Env {
 	DISCORD_APP_PUBLIC_KEY: string;
 	DISCOED_APP_SECRET: string;
 	DISCORD_APP_TOKEN: string;
-	DISCORD_APP_GUILD_ID: string;
-	OPENAI_API_KEY: string;
 }
 
 export default {
@@ -47,6 +45,7 @@ export default {
 			});
 		}
 
+		// check if request is from discord
 		const signature = request.headers.get('X-Signature-Ed25519');
 		const timestamp = request.headers.get('X-Signature-Timestamp');
 		const rawBody = await request.clone().text();
@@ -74,29 +73,30 @@ export default {
 			);
 		}
 
-		const commands = [PongConfig, GenerateConfig];
+		// register commands
+		const commands = [PongConfig, TriviaConfig];
 		await Promise.all(commands.map((cmd) => registerCommand(cmd, env.DISCORD_APP_ID, env.DISCORD_APP_TOKEN)));
 
-		const message = (await request.json()) as {
-			id: string;
-			type: InteractionType;
-			token: string;
-			member?: {
-				user: {
-					id: string;
-					username: string;
-					discriminator: string;
-				};
-				roles: string[];
-				permissions: string;
-				joined_at: string;
-			};
-			data: CommandConfig;
-		};
+		const message = (await request.json()) as DiscordMessage;
 
 		if (message.type === InteractionType.APPLICATION_COMMAND) {
 			if (message.data.name === 'ping') {
 				return pong();
+			}
+
+			if (message.data.name === 'trivia') {
+				const test = message.data.options?.find((opt) => opt.name === 'test')?.value;
+				if (!test || typeof test !== 'string') {
+					return new Response(
+						JSON.stringify({
+							error: 'Invalid request signature',
+						}),
+						{
+							status: 401,
+						}
+					);
+				}
+				return trivia(test, message.token, env);
 			}
 
 			// all other commands require an input
@@ -111,22 +111,6 @@ export default {
 				);
 			}
 
-			if (message.data.name === 'generate') {
-				const prompt = message.data.options.find((opt) => opt.name === 'prompt')?.value;
-				generate(prompt as string, env.OPENAI_API_KEY, env.DISCORD_APP_ID, message.token);
-
-				return new Response(
-					JSON.stringify({
-						type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
-						data: {
-							content: 'Generating image...',
-						},
-					}),
-					{
-						status: 200,
-					}
-				);
-			}
 		}
 		if (message.type === InteractionType.PING) {
 			return new Response(

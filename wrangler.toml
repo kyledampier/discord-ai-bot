@@ -7,11 +7,7 @@ compatibility_date = "2023-07-24"
 # Docs: https://developers.cloudflare.com/workers/platform/environment-variables
 [vars]
 DISCORD_APP_ID = "1022889827953283102"
-DISCORD_APP_SECRET = "5zKeZKtL5K8mqAuG3kWOk2vp8UqDOIWv"
 DISCORD_APP_PUBLIC_KEY = "9d5a533146fd840c26abe21d33ecf714096e6c12db6c3b87682c8c48e0750729"
-DISCORD_APP_TOKEN = "MTAyMjg4OTgyNzk1MzI4MzEwMg.GrIptb.NiK8702GwI_Qij_4Ql2nzFTqekbBaa_GosEOBQ"
-DISCORD_APP_GUILD_ID = "1019967861843824673"
-OPENAI_API_KEY = "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"
 
 # Bind a KV Namespace. Use KV as persistent storage for small key-value pairs.
 # Docs: https://developers.cloudflare.com/workers/runtime-apis/kv
