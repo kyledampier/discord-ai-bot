@@ -70,6 +70,7 @@ export async function trivia(msg: DiscordMessage, env: Env) {
 		);
 	}
 
+	const messenger = msg.member?.user.id;
 	const challenger = input.challenger as string;
 	const interactionUrl = `https://discord.com/api/v10/interactions/${env.DISCORD_APP_ID}/${msg.token}/callback`;
 
@@ -77,7 +78,26 @@ export async function trivia(msg: DiscordMessage, env: Env) {
 		JSON.stringify({
 			type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 			data: {
-				content: `This person is gay -> <@!${input.challenger}>`,
+				content: `<@!${messenger}> has challenged <@!${challenger}> to a game of trivia!`,
+				components: [
+					{
+						type: MessageComponentTypes.ACTION_ROW,
+						components: [
+							{
+								type: MessageComponentTypes.BUTTON,
+								label: 'Accept',
+								style: 3, // GREEN
+								custom_id: 'challenger_accept',
+							},
+							{
+								type: MessageComponentTypes.BUTTON,
+								label: 'Decline',
+								style: 4, // RED
+								custom_id: 'challenger_decline',
+							},
+						],
+					},
+				],
 			},
 		}),
 		{

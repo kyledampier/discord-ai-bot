@@ -13,6 +13,7 @@ import { registerCommand } from './commands/register';
 import { PongConfig, pong } from './commands/pong';
 import { TriviaConfig, trivia } from './commands/trivia';
 import { DiscordMessage } from './types';
+import { challengerResponse } from './commands/challengerResponse';
 
 export interface Env {
 	// Example binding to KV. Learn more at https://developers.cloudflare.com/workers/runtime-apis/kv/
@@ -29,6 +30,9 @@ export interface Env {
 	//
 	// Example binding to a Queue. Learn more at https://developers.cloudflare.com/queues/javascript-apis/
 	// MY_QUEUE: Queue;
+
+	USERS: KVNamespace;
+	DB: D1Database;
 
 	DISCORD_APP_ID: string;
 	DISCORD_APP_PUBLIC_KEY: string;
@@ -78,6 +82,13 @@ export default {
 		await Promise.all(commands.map((cmd) => registerCommand(cmd, env.DISCORD_APP_ID, env.DISCORD_APP_TOKEN)));
 
 		const message = (await request.json()) as DiscordMessage;
+		console.log(message);
+
+		if (message.type === InteractionType.MESSAGE_COMPONENT) {
+			if (message.data.custom_id === 'challenger_accept' || message.data.custom_id === 'challenger_decline') {
+				return challengerResponse(message, env);
+			}
+		}
 
 		if (message.type === InteractionType.APPLICATION_COMMAND) {
 			if (message.data.name === 'ping') {

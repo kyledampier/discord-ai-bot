@@ -21,4 +21,6 @@ export type CommandConfig = {
 	description: string;
 	type: CommandType;
 	options?: CommandOption[];
+	component_type?: number;
+	custom_id?: string;
 };
