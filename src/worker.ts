@@ -84,21 +84,6 @@ export default {
 				return pong();
 			}
 
-			if (message.data.name === 'trivia') {
-				const test = message.data.options?.find((opt) => opt.name === 'test')?.value;
-				if (!test || typeof test !== 'string') {
-					return new Response(
-						JSON.stringify({
-							error: 'Invalid request signature',
-						}),
-						{
-							status: 401,
-						}
-					);
-				}
-				return trivia(test, message.token, env);
-			}
-
 			// all other commands require an input
 			if (!message.data.options) {
 				return new Response(
@@ -109,6 +94,12 @@ export default {
 						status: 401,
 					}
 				);
+			}
+
+			console.log(message.data.name, message.data.options);
+
+			if (message.data.name === 'trivia') {
+				return trivia(message, env);
 			}
 
 		}
