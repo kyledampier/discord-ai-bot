@@ -47,7 +47,7 @@ export async function addQuestion(request: Request, env: Env, ctx: ExecutionCont
 	]);
 
 	return new Response(JSON.stringify({
-		success: true,
+		question: questionResult[0],
 	}), {
 		status: 200,
 		headers: {
