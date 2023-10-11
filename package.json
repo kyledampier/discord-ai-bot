@@ -6,8 +6,7 @@
 		"deploy": "wrangler deploy",
 		"start": "wrangler dev",
 		"generate": "drizzle-kit generate:sqlite --schema=src/schema.ts",
-		"up": "drizzle-kit up:sqlite --schema=src/schema.ts",
-		"register": "npx ts-node src/commands/register.ts"
+		"up": "drizzle-kit up:sqlite --schema=src/schema.ts"
 	},
 	"devDependencies": {
 		"@cloudflare/workers-types": "^4.20230419.0",
@@ -18,7 +17,6 @@
 	},
 	"dependencies": {
 		"discord-interactions": "^3.4.0",
-		"dotenv": "^16.3.1",
 		"drizzle-orm": "^0.28.6",
 		"itty-router": "^4.0.23"
 	}

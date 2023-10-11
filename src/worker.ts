@@ -33,7 +33,6 @@ export default {
 			schema
 		});
 
-
 		const url = new URL(request.url);
 
 		// manage api routes
@@ -112,8 +111,9 @@ export default {
 			if (message.data.name === 'trivia') {
 				return trivia(message, env);
 			}
-
 		}
+
+		// Respond to ping, Required by Discord
 		if (message.type === InteractionType.PING) {
 			return new Response(
 				JSON.stringify({
