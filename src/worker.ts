@@ -8,8 +8,6 @@
  * Learn more at https://developers.cloudflare.com/workers/
  */
 
-import { drizzle } from 'drizzle-orm/d1';
-import * as schema from './schema';
 import { InteractionResponseType, InteractionType, verifyKey } from 'discord-interactions';
 import { pong, redeem, balance, trivia } from './commands';
 import { DiscordMessage } from './types';
@@ -18,10 +16,6 @@ import router from './api/router';
 
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-
-		const db = drizzle(env.DB, {
-			schema
-		});
 
 		const url = new URL(request.url);
 
@@ -69,7 +63,7 @@ export default {
 
 		if (message.type === InteractionType.MESSAGE_COMPONENT) {
 			if (message.data.custom_id === 'challenger_accept' || message.data.custom_id === 'challenger_decline') {
-				return challengerResponse(message, env);
+				return challengerResponse(message, env, ctx);
 			}
 		}
 
@@ -79,11 +73,11 @@ export default {
 			}
 
 			if (message.data.name === 'redeem') {
-				return redeem(message, env);
+				return redeem(message, env, ctx);
 			}
 
 			if (message.data.name === 'balance') {
-				return balance(message, env);
+				return balance(message, env, ctx);
 			}
 
 			// all other commands require an input
@@ -99,7 +93,7 @@ export default {
 			}
 
 			if (message.data.name === 'trivia') {
-				return trivia(message, env);
+				return trivia(message, env, ctx);
 			}
 		}
 

@@ -1,7 +1,7 @@
 import { InteractionResponseType } from "discord-interactions";
 import { DiscordMessage } from "../types";
 
-export function challengerResponse(message: DiscordMessage, env: Env) {
+export function challengerResponse(message: DiscordMessage, env: Env, ctx: ExecutionContext) {
 
 	if (!message.member) {
 		return new Response(

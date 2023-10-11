@@ -7,15 +7,15 @@ export async function registerCommand(cmd: CommandConfig, appId?: string, token?
 
 	const commandsRegUrl = `https://discord.com/api/v10/applications/${appId}/commands`;
 
-		const headers = {
-			Authorization: `Bot ${token}`,
-			'Content-Type': 'application/json',
-		};
+	const headers = {
+		Authorization: `Bot ${token}`,
+		'Content-Type': 'application/json',
+	};
 
-		return await fetch(commandsRegUrl, {
-			method: 'POST',
-			headers,
-			body: JSON.stringify(cmd),
-		});
+	return await fetch(commandsRegUrl, {
+		method: 'POST',
+		headers,
+		body: JSON.stringify(cmd),
+	});
 }
 

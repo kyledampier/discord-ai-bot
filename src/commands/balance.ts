@@ -1,6 +1,6 @@
-import { serializeRedeemState } from "./redeem";
 import { DiscordMessage } from "../types";
-import { UserState } from "../types/UserState";
+import { InteractionResponseType } from "discord-interactions";
+import { getBalanceState } from "../utils/states";
 
 export const BalanceConfig = {
 	name: 'balance',
@@ -8,29 +8,30 @@ export const BalanceConfig = {
 	type: 1,
 };
 
-export async function balance(msg: DiscordMessage, env: Env) {
-	let userState: UserState | undefined = undefined;
+export async function balance(msg: DiscordMessage, env: Env, ctx: ExecutionContext) {
+	let userState = await getBalanceState(env, msg.member?.user.id, msg.guild_id);
 
-	try {
-		userState = await env.USERS.get(`${msg.guild_id}:${msg.member?.user.id}`).then((val) => serializeRedeemState(val ?? "{}")) as UserState | undefined;
-	} catch (e) {
-		console.error(e);
-	}
-
-	if (!userState || !userState.balance || !userState.redeem) {
-		userState = {
-			balance: 0,
-			redeem: {
-				hourly: new Date(0),
-				daily: new Date(0),
-				weekly: new Date(0),
-				monthly: new Date(0),
+	if (!userState.user || !userState.guild || !userState.balance) {
+		return new Response(
+			JSON.stringify({
+				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+				data: {
+					content: `You have 0 :coin:. Please use \`/redeem\` to redeem your first :coin:!`,
+				}
+			}), {
+				status: 200,
+				headers:{
+					'Content-Type': 'application/json',
+				},
 			}
-		};
+		);
 	}
 
 	return new Response(JSON.stringify({
-		content: `You have ${userState.balance.toLocaleString()} :coin:!`,
+		type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+		data: {
+			content: `You have ${userState.balance.balance.toLocaleString(userState.guild.locale ?? "en-US")} :coin:!`,
+		}
 	}), {
 		status: 200,
 		headers: {

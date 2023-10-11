@@ -1,0 +1,10 @@
+DROP TABLE IF EXISTS answers;
+DROP TABLE IF EXISTS answer_logs;
+DROP TABLE IF EXISTS balances;
+DROP TABLE IF EXISTS challenges;
+DROP TABLE IF EXISTS discord_guilds;
+DROP TABLE IF EXISTS discord_interactions;
+DROP TABLE IF EXISTS questions;
+DROP TABLE IF EXISTS question_categories;
+DROP TABLE IF EXISTS question_logs;
+DROP TABLE IF EXISTS discord_users;

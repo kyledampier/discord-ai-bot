@@ -1,5 +1,10 @@
-import question from "./question";
+import deleteCommand from "./deleteCommand";
+import { getQuestion, addQuestion } from "./question";
+import registerCommands from "./registerCommands";
 
 export {
-	question
+	getQuestion,
+	addQuestion,
+	registerCommands,
+	deleteCommand
 }

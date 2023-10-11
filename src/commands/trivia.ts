@@ -56,7 +56,7 @@ export const TriviaConfig: CommandConfig = {
 	],
 };
 
-export async function trivia(msg: DiscordMessage, env: Env) {
+export async function trivia(msg: DiscordMessage, env: Env, ctx: ExecutionContext) {
 	const input = serializeInput(TriviaConfig, msg.data.options!);
 	if (!input.challenger) {
 		return new Response(

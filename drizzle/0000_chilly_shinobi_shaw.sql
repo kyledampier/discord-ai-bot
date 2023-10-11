@@ -1,19 +1,19 @@
 CREATE TABLE `answers` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`question_id` text,
-	`answer` text,
+	`question_id` integer,
+	`answer` text NOT NULL,
 	`correct` integer DEFAULT false,
 	FOREIGN KEY (`question_id`) REFERENCES `questions`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `answer_logs` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`challenge_id` text,
-	`guild_id` text,
-	`user_id` text,
-	`question_id` text,
+	`challenge_id` integer,
+	`guild_id` integer,
+	`user_id` integer,
+	`question_id` integer,
 	`question_number` integer,
-	`answer_id` text,
+	`answer_id` integer,
 	`correct` integer DEFAULT false,
 	FOREIGN KEY (`challenge_id`) REFERENCES `challenges`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`guild_id`) REFERENCES `discord_guilds`(`id`) ON UPDATE no action ON DELETE no action,
@@ -27,6 +27,10 @@ CREATE TABLE `balances` (
 	`guild_id` integer,
 	`user_id` integer,
 	`amount` integer DEFAULT 0 NOT NULL,
+	`last_monthly` integer,
+	`last_weekly` integer,
+	`last_daily` integer,
+	`last_hourly` integer,
 	FOREIGN KEY (`guild_id`) REFERENCES `discord_guilds`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`user_id`) REFERENCES `discord_users`(`id`) ON UPDATE no action ON DELETE no action
 );
@@ -41,7 +45,7 @@ CREATE TABLE `challenges` (
 	`current_question` integer DEFAULT 0,
 	`category` integer,
 	`status` text,
-	`timestamp` text DEFAULT CURRENT_TIMESTAMP,
+	`timestamp` integer,
 	FOREIGN KEY (`guild_id`) REFERENCES `discord_guilds`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`initiator_id`) REFERENCES `discord_users`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`challenger_id`) REFERENCES `discord_users`(`id`) ON UPDATE no action ON DELETE no action,
@@ -54,7 +58,7 @@ CREATE TABLE `discord_guilds` (
 );
 --> statement-breakpoint
 CREATE TABLE `discord_interactions` (
-	`id` text PRIMARY KEY NOT NULL,
+	`id` integer PRIMARY KEY NOT NULL,
 	`application_id` integer,
 	`type` text,
 	`version` text,
@@ -64,7 +68,7 @@ CREATE TABLE `discord_interactions` (
 	`guild_id` integer,
 	`user_id` integer,
 	`data` blob,
-	`timestamp` text DEFAULT CURRENT_TIMESTAMP,
+	`timestamp` integer,
 	FOREIGN KEY (`guild_id`) REFERENCES `discord_guilds`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`user_id`) REFERENCES `discord_users`(`id`) ON UPDATE no action ON DELETE no action
 );
@@ -74,7 +78,7 @@ CREATE TABLE `questions` (
 	`category` integer,
 	`type` text,
 	`difficulty` text,
-	`question` text,
+	`question` text NOT NULL,
 	FOREIGN KEY (`category`) REFERENCES `question_categories`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
@@ -85,10 +89,10 @@ CREATE TABLE `question_categories` (
 --> statement-breakpoint
 CREATE TABLE `question_logs` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`challenge_id` text,
-	`guild_id` text,
-	`user_id` text,
-	`question_id` text,
+	`challenge_id` integer,
+	`guild_id` integer,
+	`user_id` integer,
+	`question_id` integer,
 	`answer_id` integer,
 	`correct` integer DEFAULT false,
 	`question_number` integer,
@@ -106,7 +110,7 @@ CREATE TABLE `discord_users` (
 	`global_name` text
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `answers_question_idx` ON `answers` (`question_id`);--> statement-breakpoint
+CREATE INDEX `answers_question_idx` ON `answers` (`question_id`);--> statement-breakpoint
 CREATE UNIQUE INDEX `balances_user_idx` ON `balances` (`guild_id`,`user_id`);--> statement-breakpoint
 CREATE INDEX `challenges_status_idx` ON `challenges` (`status`);--> statement-breakpoint
 CREATE INDEX `challenges_timestamp_idx` ON `challenges` (`timestamp`);--> statement-breakpoint

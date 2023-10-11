@@ -1,5 +1,5 @@
 import { InteractionType } from "discord-interactions";
-import { CommandConfig } from "./command";
+import { CommandConfig } from "./Command";
 
 export type DiscordMessage = {
 	id: string;
@@ -7,14 +7,19 @@ export type DiscordMessage = {
 	token: string;
 	member?: {
 		user: {
-			id: string;
+			id: number;
 			username: string;
 			discriminator: string;
+			global_name?: string;
 		};
 		roles: string[];
 		permissions: string;
 		joined_at: string;
 	};
-	guild_id: string;
+	guild_id: number;
+	guild: {
+		id: number;
+		locale: string;
+	}
 	data: CommandConfig;
 }
