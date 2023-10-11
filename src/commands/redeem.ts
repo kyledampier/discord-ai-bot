@@ -1,7 +1,6 @@
 import { InteractionResponseType } from "discord-interactions";
 import { CommandConfig, DiscordMessage } from "../types";
 import { UserState } from "../types/UserState";
-import { Env } from "../worker";
 
 export const RedeemConfig: CommandConfig = {
 	name: 'redeem',

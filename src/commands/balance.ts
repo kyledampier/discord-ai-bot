@@ -1,5 +1,4 @@
 import { serializeRedeemState } from "./redeem";
-import { Env } from "../worker";
 import { DiscordMessage } from "../types";
 import { UserState } from "../types/UserState";
 

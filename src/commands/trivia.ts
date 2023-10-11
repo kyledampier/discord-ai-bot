@@ -1,5 +1,4 @@
 import { InteractionResponseType, MessageComponentTypes } from "discord-interactions";
-import { Env } from "../worker";
 import { CommandConfig, DiscordMessage } from "../types";
 import { serializeInput } from "../utils/serialize";
 

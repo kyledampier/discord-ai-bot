@@ -1,5 +1,3 @@
-import { Env } from "../worker";
-
 export async function getUser(id: string, env: Env) {
 	const userApi = `https://discord.com/api/v9/users/${id}`;
 

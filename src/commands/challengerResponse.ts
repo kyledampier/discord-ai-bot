@@ -1,6 +1,5 @@
 import { InteractionResponseType } from "discord-interactions";
 import { DiscordMessage } from "../types";
-import { Env } from "../worker";
 
 export function challengerResponse(message: DiscordMessage, env: Env) {
 

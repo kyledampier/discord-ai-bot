@@ -1,5 +1,4 @@
 import { registerCommand, PongConfig, TriviaConfig, RedeemConfig, BalanceConfig } from "../../commands/index";
-import { Env } from "../../worker";
 import { CommandConfig } from "../../types";
 
 export default async function registerCommands(command: string, env: Env) {
