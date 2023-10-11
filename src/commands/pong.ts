@@ -1,6 +1,7 @@
 import { InteractionResponseType } from 'discord-interactions';
+import { CommandConfig } from '../types';
 
-export const PongConfig = {
+export const PongConfig: CommandConfig = {
 	name: 'pong',
 	description: 'Replies with Pong!',
 	type: 1,

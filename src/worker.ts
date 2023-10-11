@@ -11,9 +11,7 @@
 import { drizzle } from 'drizzle-orm/d1';
 import * as schema from './schema';
 import { InteractionResponseType, InteractionType, verifyKey } from 'discord-interactions';
-import { registerCommand } from './commands/register';
-import { PongConfig, pong } from './commands/pong';
-import { TriviaConfig, trivia } from './commands/trivia';
+import { pong, redeem, balance, trivia } from './commands';
 import { DiscordMessage } from './types';
 import { challengerResponse } from './commands/challengerResponse';
 import router from './api/router';
@@ -78,12 +76,7 @@ export default {
 			);
 		}
 
-		// register commands
-		const commands = [PongConfig, TriviaConfig];
-		await Promise.all(commands.map((cmd) => registerCommand(cmd, env.DISCORD_APP_ID, env.DISCORD_APP_TOKEN)));
-
 		const message = (await request.json()) as DiscordMessage;
-		console.log(message);
 
 		if (message.type === InteractionType.MESSAGE_COMPONENT) {
 			if (message.data.custom_id === 'challenger_accept' || message.data.custom_id === 'challenger_decline') {
@@ -94,6 +87,14 @@ export default {
 		if (message.type === InteractionType.APPLICATION_COMMAND) {
 			if (message.data.name === 'ping') {
 				return pong();
+			}
+
+			if (message.data.name === 'redeem') {
+				return redeem(message, env);
+			}
+
+			if (message.data.name === 'balance') {
+				return balance(message, env);
 			}
 
 			// all other commands require an input
@@ -107,8 +108,6 @@ export default {
 					}
 				);
 			}
-
-			console.log(message.data.name, message.data.options);
 
 			if (message.data.name === 'trivia') {
 				return trivia(message, env);

@@ -15,5 +15,6 @@ export type DiscordMessage = {
 		permissions: string;
 		joined_at: string;
 	};
+	guild_id: string;
 	data: CommandConfig;
 }

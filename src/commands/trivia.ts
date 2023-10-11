@@ -16,7 +16,7 @@ export const TriviaConfig: CommandConfig = {
 		},
 		{
 			name: 'wager',
-			description: 'The amount of points you want to wager',
+			description: 'The amount of :coin: you want to wager',
 			type: 4, // INTEGER
 			required: true,
 		},

@@ -1,4 +1,4 @@
-name = "discord-ai"
+name = "discord-bot"
 main = "src/worker.ts"
 compatibility_date = "2023-07-24"
 
@@ -9,18 +9,16 @@ compatibility_date = "2023-07-24"
 DISCORD_APP_ID = "1022889827953283102"
 DISCORD_APP_PUBLIC_KEY = "9d5a533146fd840c26abe21d33ecf714096e6c12db6c3b87682c8c48e0750729"
 
-kv_namespaces = [{ binding = "USERS", id = "fb9fb42fb0bb4181879a44412fa56a05" }]
-
-[[d1_namespaces]]
+[[d1_databases]]
 binding = "DB"
 database_name = "discord-bot"
 database_id = "6a6edf53-43ba-4d94-9ed0-e5e722c974b6"
 
 # Bind a KV Namespace. Use KV as persistent storage for small key-value pairs.
 # Docs: https://developers.cloudflare.com/workers/runtime-apis/kv
-# [[kv_namespaces]]
-# binding = "MY_KV_NAMESPACE"
-# id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+[[kv_namespaces]]
+binding = "USERS"
+id = "fb9fb42fb0bb4181879a44412fa56a05"
 
 # Bind an R2 Bucket. Use R2 to store arbitrarily large blobs of data, such as files.
 # Docs: https://developers.cloudflare.com/r2/api/workers/workers-api-usage/
