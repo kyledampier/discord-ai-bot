@@ -16,7 +16,19 @@ export async function addQuestion(request: Request, env: Env, ctx: ExecutionCont
 	const db = getDb(env);
 
 	const body = await request.json();
-	const input = createQuestionSchema.parse(body);
+	let input: typeof createQuestionSchema._type;
+	try {
+		input = createQuestionSchema.parse(body);
+	} catch (e) {
+		return new Response(JSON.stringify({
+			error: e,
+		}), {
+			status: 400,
+			headers: {
+				'Content-Type': 'application/json;charset=UTF-8',
+			},
+		});
+	}
 
 	let category = await db.select().from(questionCategory).where(eq(questionCategory.name, input.category));
 
