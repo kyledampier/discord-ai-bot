@@ -69,9 +69,7 @@ CREATE TABLE `discord_interactions` (
 	`channel_name` text,
 	`nsfw` integer DEFAULT false,
 	`data` blob,
-	`timestamp` integer,
-	FOREIGN KEY (`guild_id`) REFERENCES `discord_guilds`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`user_id`) REFERENCES `discord_users`(`id`) ON UPDATE no action ON DELETE no action
+	`timestamp` integer
 );
 --> statement-breakpoint
 CREATE TABLE `questions` (

@@ -4,6 +4,7 @@ import getDb from "../utils/db";
 import { getBalanceState } from "../utils/states";
 import { and, eq } from "drizzle-orm";
 import { user, guild, balance } from "../schema";
+import { channelMessage } from "../utils/response";
 
 export const RedeemConfig: CommandConfig = {
 	name: 'redeem',
@@ -78,17 +79,7 @@ export async function redeem(msg: DiscordMessage, env: Env, ctx: ExecutionContex
 			last_monthly:	new Date()
 		});
 
-		return new Response(JSON.stringify({
-			type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-			data: {
-				content: `You have redeemed :coin: for the first time!\nYou can redeem :coin: once every hour, day, week and month.\n\n**You now have ${defaultBalance.toLocaleString()} :coin:!**`,
-			},
-		}), {
-			status: 200,
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		});
+		return channelMessage(`You have redeemed :coin: for the first time!\nYou can redeem :coin: once every hour, day, week and month.\n\n**You now have ${defaultBalance.toLocaleString()} :coin:!**`,);
 	}
 
 	const locale = userState.guild.locale ?? "en-US";
@@ -124,7 +115,7 @@ export async function redeem(msg: DiscordMessage, env: Env, ctx: ExecutionContex
 		pointsStatus += `${redeemPointConfig.weekly.toLocaleString(locale)} :coin: redeemed for weekly.\n`;
 	} else {
 		const timeLeft = new Date((userState.balance.last_weekly.getTime() + WEEK) - now.getTime());
-		pointsStatus += `You have ${timeLeft.getDate()} days ${timeLeft.getHours()} hours ${timeLeft.getMinutes()} minutes ${timeLeft.getSeconds()} seconds left for weekly.\n`;
+		pointsStatus += `You have ${timeLeft.getDate() - 1} days ${timeLeft.getHours()} hours ${timeLeft.getMinutes()} minutes ${timeLeft.getSeconds()} seconds left for weekly.\n`;
 	}
 
 	if (!userState.balance.last_monthly || (now.getTime() - userState.balance.last_monthly.getTime()) >= MONTH) {
@@ -134,10 +125,10 @@ export async function redeem(msg: DiscordMessage, env: Env, ctx: ExecutionContex
 		pointsStatus += `${redeemPointConfig.monthly.toLocaleString(locale)} :coin: redeemed for monthly.\n`;
 	} else {
 		const timeLeft = new Date((userState.balance.last_monthly.getTime() + MONTH) - now.getTime());
-		pointsStatus += `You have ${timeLeft.getDate()} days ${timeLeft.getHours()} hours ${timeLeft.getMinutes()} minutes ${timeLeft.getSeconds()} seconds left for monthly.\n`;
+		pointsStatus += `You have ${timeLeft.getDate() - 1} days ${timeLeft.getHours()} hours ${timeLeft.getMinutes()} minutes ${timeLeft.getSeconds()} seconds left for monthly.\n`;
 	}
 
-	ctx.waitUntil(db.update(balance).set({
+	await db.update(balance).set({
 		balance: userState.balance.balance,
 		last_daily: userState.balance.last_daily,
 		last_hourly: userState.balance.last_hourly,
@@ -145,19 +136,7 @@ export async function redeem(msg: DiscordMessage, env: Env, ctx: ExecutionContex
 		last_weekly: userState.balance.last_weekly,
 	}).where(
 		eq(balance.id, userState.balance.id)
-	));
-
-	return new Response(
-		JSON.stringify({
-			type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-			data: {
-				content: `<@!${msg.member?.user.id}> has redeemed ${totalRedeemed.toLocaleString(locale)} :coin:!\n\n${pointsStatus}\n**You now have ${userState.balance.balance.toLocaleString(locale)} :coin:!**`,
-			},
-		}),
-		{
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		}
 	);
+
+	return channelMessage(`<@!${msg.member?.user.id}> has redeemed ${totalRedeemed.toLocaleString(locale)} :coin:!\n\n${pointsStatus}\n**You now have ${userState.balance.balance.toLocaleString(locale)} :coin:!**`);
 }

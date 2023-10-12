@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "4fc47fc8-1c68-4252-8045-fa17b2f1bc30",
+  "id": "c2b89527-5b2f-407c-af55-9b0cd9d4406d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "answers": {
@@ -600,34 +600,7 @@
           "isUnique": true
         }
       },
-      "foreignKeys": {
-        "discord_interactions_guild_id_discord_guilds_id_fk": {
-          "name": "discord_interactions_guild_id_discord_guilds_id_fk",
-          "tableFrom": "discord_interactions",
-          "tableTo": "discord_guilds",
-          "columnsFrom": [
-            "guild_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "discord_interactions_user_id_discord_users_id_fk": {
-          "name": "discord_interactions_user_id_discord_users_id_fk",
-          "tableFrom": "discord_interactions",
-          "tableTo": "discord_users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },

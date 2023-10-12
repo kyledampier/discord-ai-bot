@@ -1,5 +1,6 @@
 import { InteractionResponseType } from 'discord-interactions';
 import { CommandConfig } from '../types';
+import { channelMessage } from '../utils/response';
 
 export const PongConfig: CommandConfig = {
 	name: 'pong',
@@ -8,18 +9,5 @@ export const PongConfig: CommandConfig = {
 };
 
 export function pong() {
-	return new Response(
-		JSON.stringify({
-			type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-			data: {
-				content: 'Pong!',
-			},
-		}),
-		{
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			status: 200,
-		}
-	);
+	return channelMessage('Pong!');
 }

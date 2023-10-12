@@ -1,51 +1,19 @@
 import { InteractionResponseType } from "discord-interactions";
 import { DiscordMessage } from "../types";
+import { channelMessage, errorResponse } from "../utils/response";
 
 export function challengerResponse(message: DiscordMessage, env: Env, ctx: ExecutionContext) {
 
 	if (!message.member) {
-		return new Response(
-			JSON.stringify({
-				error: 'Invalid request signature',
-			}),
-			{
-				status: 401,
-			}
-		);
+		return errorResponse('You must be in a server to use this command!', 401);
 	}
 
 	const messenger = message.member.user.id;
 	const accepted = message.data.custom_id === 'challenger_accept';
 
 	if (!accepted) {
-		return new Response(
-			JSON.stringify({
-				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-				data: {
-					content: `<@!${messenger}> has declined the challenge!`,
-				},
-			}),
-			{
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				status: 200,
-			}
-		);
+		return channelMessage(`<@!${messenger}> has declined the challenge!`);
 	}
 
-	return new Response(
-		JSON.stringify({
-			type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-			data: {
-				content: `<@!${messenger}> accepted the challenge!`,
-			},
-		}),
-		{
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			status: 200,
-		}
-	);
+	return channelMessage(`<@!${messenger}> accepted the challenge!`);
 }

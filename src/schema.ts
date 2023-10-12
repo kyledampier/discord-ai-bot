@@ -57,8 +57,8 @@ export const balanceRelations = relations(balance, ({ one }) => ({
 
 export const interaction = sqliteTable('discord_interactions', {
 	id: text('id').primaryKey(),
-	guild_id: text('guild_id').references(() => guild.id),
-	user_id: text('user_id').references(() => user.id),
+	guild_id: text('guild_id'),
+	user_id: text('user_id'),
 	application_id: text('application_id'),
 	type: text('type'),
 	version: text('version'),
