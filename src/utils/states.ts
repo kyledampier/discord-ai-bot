@@ -8,7 +8,7 @@ export type BalanceState = {
 	balance: typeof balance.$inferSelect;
 }
 
-export async function getBalanceState(env: Env, user_id?: number, guild_id?: number): Promise<BalanceState> {
+export async function getBalanceState(env: Env, user_id?: string, guild_id?: string): Promise<BalanceState> {
 
 	if (!user_id || !guild_id) {
 		throw new Error("user_id and guild_id are required");

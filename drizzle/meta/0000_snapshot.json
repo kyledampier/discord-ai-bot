@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "509f2c9d-653d-47e8-a5c3-1839553643ee",
+  "id": "4fc47fc8-1c68-4252-8045-fa17b2f1bc30",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "answers": {
@@ -81,20 +81,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "guild_id": {
-          "name": "guild_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "question_id": {
           "name": "question_id",
           "type": "integer",
@@ -105,6 +91,20 @@
         "question_number": {
           "name": "question_number",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "guild_id": {
+          "name": "guild_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -140,6 +140,19 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
+        "answer_logs_question_id_questions_id_fk": {
+          "name": "answer_logs_question_id_questions_id_fk",
+          "tableFrom": "answer_logs",
+          "tableTo": "questions",
+          "columnsFrom": [
+            "question_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
         "answer_logs_guild_id_discord_guilds_id_fk": {
           "name": "answer_logs_guild_id_discord_guilds_id_fk",
           "tableFrom": "answer_logs",
@@ -159,19 +172,6 @@
           "tableTo": "discord_users",
           "columnsFrom": [
             "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "answer_logs_question_id_questions_id_fk": {
-          "name": "answer_logs_question_id_questions_id_fk",
-          "tableFrom": "answer_logs",
-          "tableTo": "questions",
-          "columnsFrom": [
-            "question_id"
           ],
           "columnsTo": [
             "id"
@@ -208,14 +208,14 @@
         },
         "guild_id": {
           "name": "guild_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "user_id": {
           "name": "user_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -310,21 +310,21 @@
         },
         "guild_id": {
           "name": "guild_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "initiator_id": {
           "name": "initiator_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "challenger_id": {
           "name": "challenger_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -476,7 +476,7 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": true,
           "notNull": true,
           "autoincrement": false
@@ -487,17 +487,16 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "app_permissions": {
+          "name": "app_permissions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
-      "indexes": {
-        "guilds_idx": {
-          "name": "guilds_idx",
-          "columns": [
-            "id"
-          ],
-          "isUnique": true
-        }
-      },
+      "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
@@ -507,14 +506,28 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": true,
           "notNull": true,
           "autoincrement": false
         },
+        "guild_id": {
+          "name": "guild_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "application_id": {
           "name": "application_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -535,7 +548,7 @@
         },
         "channel_id": {
           "name": "channel_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -554,20 +567,6 @@
           "notNull": false,
           "autoincrement": false,
           "default": false
-        },
-        "guild_id": {
-          "name": "guild_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
         },
         "data": {
           "name": "data",
@@ -679,6 +678,13 @@
           ],
           "isUnique": false
         },
+        "questions_type_idx": {
+          "name": "questions_type_idx",
+          "columns": [
+            "type"
+          ],
+          "isUnique": false
+        },
         "questions_question_idx": {
           "name": "questions_question_idx",
           "columns": [
@@ -753,16 +759,23 @@
           "notNull": false,
           "autoincrement": false
         },
+        "question_number": {
+          "name": "question_number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "guild_id": {
           "name": "guild_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "user_id": {
           "name": "user_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -788,13 +801,6 @@
           "notNull": false,
           "autoincrement": false,
           "default": false
-        },
-        "question_number": {
-          "name": "question_number",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
         }
       },
       "indexes": {
@@ -882,7 +888,7 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": true,
           "notNull": true,
           "autoincrement": false
@@ -899,6 +905,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "avatar": {
+          "name": "avatar",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "global_name": {

@@ -2,9 +2,10 @@ import { sql, relations } from "drizzle-orm";
 import { sqliteTable, text, integer, uniqueIndex, index, blob } from 'drizzle-orm/sqlite-core';
 
 export const user = sqliteTable('discord_users', {
-	id: integer('id').primaryKey(),
+	id: text('id').primaryKey(),
 	username: text('username').notNull(),
 	discriminator: text('discriminator').notNull(),
+	avatar: text('avatar'),
 	global_name: text('global_name'),
 });
 
@@ -16,12 +17,9 @@ export const userRelations = relations(user, ({ many }) => ({
 }));
 
 export const guild = sqliteTable('discord_guilds', {
-	id: integer('id').primaryKey(),
+	id: text('id').primaryKey(),
 	locale: text('locale'),
-}, (guilds) => {
-	return {
-		guildsIdIndex: uniqueIndex('guilds_idx').on(guilds.id),
-	}
+	app_permissions: text('app_permissions'),
 });
 
 export const guildRelations = relations(guild, ({ many }) => ({
@@ -33,8 +31,8 @@ export const guildRelations = relations(guild, ({ many }) => ({
 
 export const balance = sqliteTable('balances', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
-	guild_id: integer('guild_id').references(() => guild.id),
-	user_id: integer('user_id').references(() => user.id),
+	guild_id: text('guild_id').references(() => guild.id),
+	user_id: text('user_id').references(() => user.id),
 	balance: integer('amount').notNull().default(0),
 	last_monthly: integer('last_monthly', { mode: 'timestamp_ms'}),
 	last_weekly: integer('last_weekly', { mode: 'timestamp_ms'}),
@@ -58,15 +56,15 @@ export const balanceRelations = relations(balance, ({ one }) => ({
 }));
 
 export const interaction = sqliteTable('discord_interactions', {
-	id: integer('id').primaryKey(),
-	application_id: integer('application_id'),
+	id: text('id').primaryKey(),
+	guild_id: text('guild_id').references(() => guild.id),
+	user_id: text('user_id').references(() => user.id),
+	application_id: text('application_id'),
 	type: text('type'),
 	version: text('version'),
-	channel_id: integer('channel_id'),
+	channel_id: text('channel_id'),
 	channel_name: text('channel_name'),
 	nsfw: integer('nsfw', { mode: 'boolean' }).default(false),
-	guild_id: integer('guild_id').references(() => guild.id),
-	user_id: integer('user_id').references(() => user.id),
 	data: blob('data', { mode: 'json' }),
 	timestamp: integer("timestamp", { mode: "timestamp_ms" }).$defaultFn(() => new Date()),
 }, (interactions) => {
@@ -91,9 +89,9 @@ export type ChallengeStatus = 'pending' | 'accepted' | 'declined' | 'cancelled' 
 
 export const challenge = sqliteTable('challenges', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
-	guild_id: integer('guild_id').references(() => guild.id),
-	initiator_id: integer('initiator_id').references(() => user.id),
-	challenger_id: integer('challenger_id').references(() => user.id),
+	guild_id: text('guild_id').references(() => guild.id),
+	initiator_id: text('initiator_id').references(() => user.id),
+	challenger_id: text('challenger_id').references(() => user.id),
 	wager: integer('wager').notNull(),
 	num_questions: integer('num_questions').notNull(),
 	current_question: integer('current_question').default(0),
@@ -150,6 +148,7 @@ export const question = sqliteTable('questions', {
 }, (questions) => {
 	return {
 		categoryIndex: index('questions_category_idx').on(questions.category_id),
+		typeIndex: index('questions_type_idx').on(questions.type),
 		questionIndex: uniqueIndex('questions_question_idx').on(questions.question),
 	}
 });
@@ -183,12 +182,12 @@ export const answerRelations = relations(answer, ({ one }) => ({
 export const question_log = sqliteTable('question_logs', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
 	challenge_id: integer('challenge_id').references(() => challenge.id),
-	guild_id: integer('guild_id').references(() => guild.id),
-	user_id: integer('user_id').references(() => user.id),
+	question_number: integer('question_number'),
+	guild_id: text('guild_id').references(() => guild.id),
+	user_id: text('user_id').references(() => user.id),
 	question_id: integer('question_id').references(() => question.id),
 	answer_id: integer('answer_id').references(() => answer.id),
 	correct: integer('correct', { mode: 'boolean' }).default(false),
-	question_number: integer('question_number'),
 }, (question_logs) => {
 	return {
 		questionLogsGuildUserIndex: uniqueIndex('question_logs_user_idx').on(question_logs.guild_id, question_logs.user_id),
@@ -221,10 +220,10 @@ export const questionLogRelations = relations(question_log, ({ one }) => ({
 export const answer_log = sqliteTable('answer_logs', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
 	challenge_id: integer('challenge_id').references(() => challenge.id),
-	guild_id: integer('guild_id').references(() => guild.id),
-	user_id: integer('user_id').references(() => user.id),
 	question_id: integer('question_id').references(() => question.id),
 	question_number: integer('question_number'),
+	guild_id: text('guild_id').references(() => guild.id),
+	user_id: text('user_id').references(() => user.id),
 	answer_id: integer('answer_id').references(() => answer.id),
 	correct: integer('correct', { mode: 'boolean' }).default(false),
 });

@@ -7,18 +7,21 @@ export type DiscordMessage = {
 	token: string;
 	member?: {
 		user: {
-			id: number;
+			id: string;
 			username: string;
 			discriminator: string;
 			global_name?: string;
+			avatar?: string;
 		};
 		roles: string[];
 		permissions: string;
 		joined_at: string;
 	};
-	guild_id: number;
+	guild_id: string;
+	guild_locale: string;
+	app_permissions: string;
 	guild: {
-		id: number;
+		id: string;
 		locale: string;
 	}
 	data: CommandConfig;
