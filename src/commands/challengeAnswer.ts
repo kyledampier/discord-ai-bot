@@ -1,5 +1,13 @@
+import { eq } from "drizzle-orm";
+import { answer_log, challenge, question_log } from "../schema";
 import { DiscordMessage } from "../types";
-import { componentACK } from "../utils/response";
+import getDb from "../utils/db";
+import { channelMessage, channelMessageWithQuestion, componentACK, getQuestionEmbedAndComponents } from "../utils/response";
+import { getChallengeState } from "../utils/states";
+import { updateInteraction } from "../utils/updateInteraction";
+import { getNewQuestion } from "../utils/newQuestion";
+import { shuffleArray } from "../utils/shuffleArray";
+import { MessageComponentTypes } from "discord-interactions";
 
 type AnswerChoice = {
 	challenge_id: number;
@@ -23,7 +31,231 @@ function serializeAnswerChoice(custom_id?: string): AnswerChoice {
 }
 
 export async function challengeAnswer(msg: DiscordMessage, env: Env, ctx: ExecutionContext) {
-	console.log(msg);
+	const db = getDb(env);
+	const answerChoice = serializeAnswerChoice(msg.data.custom_id);
+	const state = await getChallengeState(env, answerChoice.challenge_id, answerChoice.question_id);
 
-	return componentACK();
+	if (!state) throw new Error('Challenge not found');
+
+	const isInitiator = state.challenge.initiator_id === msg.member?.user.id;
+	const isChallenger = state.challenge.challenger_id === msg.member?.user.id;
+
+	console.log('isInitiator', isInitiator, 'isChallenger', isChallenger);
+
+	if (!(isInitiator || isChallenger)) {
+		return componentACK();
+	}
+
+	const initiatorAnswered = state.answer_logs.some((a) => a.user_id === state.challenge.initiator_id);
+	const challengerAnswered = state.answer_logs.some((a) => a.user_id === state.challenge.challenger_id);
+
+	if (isInitiator && initiatorAnswered) return componentACK();
+	if (isChallenger && challengerAnswered) return componentACK();
+
+	const correctAnswer = state.question_logs[0].answer_id;
+	const isCorrect = correctAnswer === answerChoice.answer_id;
+
+	// if both have answered, return an ack
+	if (initiatorAnswered && challengerAnswered) return componentACK();
+	if ((isInitiator && initiatorAnswered) || (isChallenger && challengerAnswered)) return componentACK();
+
+	// if both have not answered yet, update the interaction for the users
+	if (!initiatorAnswered && !challengerAnswered) {
+		let interactionUpdate: Promise<any> | undefined;
+		let questionLogUpdate: Promise<any> | undefined;
+
+		if (isInitiator) {
+			const questionLog = state.question_logs.filter((q) => q.user_id === state.challenge.initiator_id)[0];
+			if (!questionLog) throw new Error('Question log not found');
+
+			const { embedQuestion, components } = getQuestionEmbedAndComponents(
+				state.question,
+				state.question.answers,
+				state.challenge,
+				{
+					initiator: isCorrect ? "correct" : "incorrect",
+					challenger: "unanswered",
+				},
+				false // buttons enabled
+			);
+
+			interactionUpdate = updateInteraction(env, questionLog.interaction_token ?? "", {
+				embeds: [embedQuestion],
+				components: [
+					{
+						type: MessageComponentTypes.ACTION_ROW,
+						components,
+					},
+				]
+			});
+
+			questionLogUpdate = db.update(question_log).set({
+				correct: isCorrect,
+			}).where(eq(question_log.id, questionLog.id));
+		}
+
+		if (isChallenger) {
+			const questionLog = state.question_logs.filter((q) => q.user_id === state.challenge.challenger_id)[0];
+			if (!questionLog) throw new Error('Question log not found');
+
+			const { embedQuestion, components } = getQuestionEmbedAndComponents(
+				state.question,
+				state.question.answers,
+				state.challenge,
+				{
+					initiator: "unanswered",
+					challenger: isCorrect ? "correct" : "incorrect",
+				},
+				false // buttons enabled
+			);
+
+			interactionUpdate = updateInteraction(env, questionLog.interaction_token ?? "", {
+				embeds: [embedQuestion],
+				components: [
+					{
+						type: MessageComponentTypes.ACTION_ROW,
+						components,
+					},
+				]
+			});
+
+			questionLogUpdate = db.update(question_log).set({
+				correct: isCorrect,
+			}).where(eq(question_log.id, questionLog.id));
+		}
+
+		const promises = Promise.all([
+			interactionUpdate,
+			questionLogUpdate,
+			db.insert(answer_log).values({
+				challenge_id: answerChoice.challenge_id,
+				question_id: answerChoice.question_id,
+				question_number: answerChoice.current_question,
+				guild_id: msg.guild_id ?? "",
+				user_id: msg.member?.user.id ?? "",
+				answer_id: answerChoice.answer_id,
+				interaction_id: msg.id,
+				interaction_token: msg.token,
+				correct: isCorrect,
+			})
+		]);
+
+		ctx.waitUntil(promises);
+		return componentACK();
+	}
+
+	let promises: Promise<any>[] = [];
+
+	const initiatorChallengeLog = state.question_logs.filter((q) => q.user_id === state.challenge.initiator_id)[0];
+	if (!initiatorChallengeLog) throw new Error('Question log not found');
+
+	const challengerChallengeLog = state.question_logs.filter((q) => q.user_id === state.challenge.challenger_id)[0];
+	if (!challengerChallengeLog) throw new Error('Question log not found');
+
+	let isInitiatorCorrect: boolean = false;
+	let isChallengerCorrect: boolean = false;
+
+	if (isInitiator && challengerAnswered) {
+		isInitiatorCorrect = isCorrect;
+		isChallengerCorrect = challengerChallengeLog.correct ?? false;
+
+		promises.push(db.update(question_log).set({
+			correct: isInitiatorCorrect,
+		}).where(eq(question_log.id, initiatorChallengeLog.id)));
+	}
+
+	if (isChallenger && initiatorAnswered) {
+		isInitiatorCorrect = initiatorChallengeLog.correct ?? false;
+		isChallengerCorrect = isCorrect;
+
+		promises.push(db.update(question_log).set({
+			correct: isChallengerCorrect,
+		}).where(eq(question_log.id, challengerChallengeLog.id)));
+	}
+
+	const { embedQuestion, components } = getQuestionEmbedAndComponents(
+		state.question,
+		state.question.answers,
+		state.challenge,
+		{
+			initiator: isInitiatorCorrect ? "correct" : "incorrect",
+			challenger: isChallengerCorrect ? "correct" : "incorrect",
+		},
+		true // disable buttons
+	);
+
+	const interactionUpdate = updateInteraction(env, initiatorChallengeLog.interaction_token ?? "", {
+		embeds: [embedQuestion],
+		components: [
+			{
+				type: MessageComponentTypes.ACTION_ROW,
+				components,
+			},
+		]
+	});
+
+	promises.push(interactionUpdate);
+
+	const answerLogUpdate = db.insert(answer_log).values({
+		challenge_id: answerChoice.challenge_id,
+		question_id: answerChoice.question_id,
+		question_number: answerChoice.current_question,
+		guild_id: msg.guild_id ?? "",
+		user_id: msg.member?.user.id ?? "",
+		answer_id: answerChoice.answer_id,
+		interaction_id: msg.id,
+		interaction_token: msg.token,
+		correct: isCorrect,
+	});
+
+	promises.push(answerLogUpdate);
+
+	let currentQuestionNum = (state.challenge.current_question ?? 0) + 1;
+
+	console.log('currentQuestionNum', currentQuestionNum, 'num_questions', state.challenge.num_questions);
+
+	if (currentQuestionNum < state.challenge.num_questions) {
+		promises.push(db.update(challenge).set({
+			current_question: currentQuestionNum,
+		}).where(eq(challenge.id, state.challenge.id)));
+
+		// Get random question
+		const newQuestion = await getNewQuestion(env);
+		const answers = shuffleArray(newQuestion.answers);
+
+		const questionLogInitiator: typeof question_log.$inferInsert = {
+			challenge_id: state.challenge.id,
+			question_number: currentQuestionNum,
+			question_id: newQuestion.id,
+			guild_id: state.challenge.guild_id,
+			user_id: state.challenge.initiator_id,
+			answer_id: answers.filter((a) => a.correct)[0].id ?? null,
+			interaction_id: msg.id,
+			interaction_token: msg.token,
+		};
+
+		const questionLogChallenger = {
+			...questionLogInitiator,
+			user_id: state.challenge.challenger_id,
+		};
+
+		promises.push(db.insert(question_log).values(questionLogInitiator));
+		promises.push(db.insert(question_log).values(questionLogChallenger));
+
+		ctx.waitUntil(Promise.all(promises));
+		return channelMessageWithQuestion(newQuestion, answers, state.challenge);
+	}
+
+	// end the challenge
+	promises.push(db.update(challenge).set({
+		current_question: currentQuestionNum,
+		status: "completed"
+	}).where(eq(challenge.id, state.challenge.id)));
+
+	// TODO: determine winner or tie
+
+	// TODO: update balances
+
+	ctx.waitUntil(Promise.all(promises));
+	return channelMessage("Challenge completed!");
 }

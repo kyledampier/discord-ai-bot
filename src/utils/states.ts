@@ -1,5 +1,5 @@
-import getDb from './db';
-import { eq, lt, gte, ne, and } from "drizzle-orm";
+import getDb, { FullQuestion } from './db';
+import { eq, lt, gte, ne, and, or } from "drizzle-orm";
 import { user, guild, balance, challenge, question, question_log, answer, answer_log } from '../schema';
 
 export type BalanceState = {
@@ -31,32 +31,52 @@ export async function getBalanceState(env: Env, user_id?: string, guild_id?: str
 
 export type ChallengeState = {
 	challenge: typeof challenge.$inferSelect;
-	question: typeof question.$inferSelect;
-	question_log: typeof question_log.$inferSelect;
-	answer: typeof answer.$inferSelect;
-	answer_log: typeof answer_log.$inferSelect;
+	question: FullQuestion;
+	question_logs: typeof question_log.$inferSelect[];
+	answer_logs: typeof answer_log.$inferSelect[];
 }
 
-// export async function getChallengeState(env: Env, challenge_id: number): Promise<ChallengeState> {
-// 	const db = getDb(env);
+export async function getChallengeState(env: Env, challenge_id: number, question_id: number): Promise<ChallengeState> {
+	const db = getDb(env);
 
-// 	const [challengeState] = await Promise.all([
-// 		db.select().from(challenge).where(eq(challenge.id, challenge_id)),
-// 	]);
+	const [challengeState, questionState] = await Promise.all([
+		db.query.challenge.findFirst({
+			where: eq(challenge.id, challenge_id),
+		}),
+		db.query.question.findFirst({
+			where: eq(question.id, question_id),
+			with: {
+				answers: true,
+				category: true,
+			}
+		}),
+	]);
 
-// 	const [questionState, questionLogState, answerState, answerLogState] = await Promise.all([
-// 		db.select().from(question).where(eq(question.id, challengeState[0].)),
-// 		db.select().from(question_log).where(eq(question_log.challenge_id, challenge_id)),
-// 		db.select().from(answer).where(eq(answer.challenge_id, challenge_id)),
-// 		db.select().from(answer_log).where(eq(answer_log.challenge_id, challenge_id)),
-// 	]);
+	if (!challengeState || !questionState) {
+		throw new Error("Challenge or question not found");
+	}
 
-// 	return {
-// 		challenge: challengeState[0],
-// 		question: questionState[0],
-// 		question_log: questionLogState[0],
-// 		answer: answerState[0],
-// 		answer_log: answerLogState[0],
-// 	}
-// }
+	const [questionLogsState, answerLogsState] = await Promise.all([
+		db.select().from(question_log).where(
+			and(
+				or(
+					eq(question_log.user_id, challengeState.initiator_id ?? ""),
+					eq(question_log.user_id, challengeState.challenger_id ?? ""),
+				),
+				eq(question_log.guild_id, challengeState.guild_id ?? ""),
+				eq(question_log.challenge_id, challenge_id),
+				eq(question_log.question_id, question_id),
+				eq(question_log.question_number, challengeState.current_question ?? 0),
+			)
+		),
+		db.select().from(answer_log).where(eq(answer_log.challenge_id, challenge_id)),
+	]);
+
+	return {
+		challenge: challengeState,
+		question: questionState,
+		question_logs: questionLogsState,
+		answer_logs: answerLogsState,
+	}
+}
 

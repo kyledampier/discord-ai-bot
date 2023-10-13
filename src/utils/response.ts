@@ -34,28 +34,56 @@ export function channelMessageWithComponents(data: { content?: string, component
 	);
 }
 
-export function channelMessageWithQuestion(question: FullQuestion, answers: Answer[], challenge: Challenge) {
+export type QuestionAnswerState = {
+	initiator: "correct" | "incorrect" | "unanswered";
+	challenger: "correct" | "incorrect" | "unanswered";
+}
+
+export function getQuestionEmbedAndComponents(question: FullQuestion, answers: Answer[], challenge: Challenge, state?: QuestionAnswerState, disabled?: boolean) {
+
 	const answerChoices = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]; // max 12 answers (really only 5)
+
+	let userStateInitiator = ":white_large_square:";
+	let userStateChallenger = ":white_large_square:";
+	let allAnswered = !state || state?.initiator !== "unanswered" || state?.challenger !== "unanswered";
+
+	console.log('allAnswered', allAnswered);
+
+	if (state) {
+		if (state.initiator === "correct") userStateInitiator = ":white_check_mark:";
+		if (state.initiator === "incorrect") userStateInitiator = ":x:";
+
+		if (state.challenger === "correct") userStateChallenger = ":white_check_mark:";
+		if (state.challenger === "incorrect") userStateChallenger = ":x:";
+	}
+	const userStateDescription = `${userStateInitiator} <@!${challenge.initiator_id}>\n${userStateChallenger} <@!${challenge.challenger_id}>`;
 
 	const embedQuestion: DiscordEmbed = {
 		color: 0x5865F2,
-		title: `Question ${challenge.current_question ?? 0 + 1} of ${challenge.num_questions}`,
+		title: `Question ${(challenge.current_question ?? 0) + 1} of ${challenge.num_questions}`,
 		fields: [
 			{ name: 'Category', value: (question.category?.name ?? "General Knowledge"), inline: true },
 			{ name: 'Difficulty', value: (question.difficulty ?? "medium") as string, inline: true },
 		],
-		description: `${question.question}\n\n${answers.map((a, i) => `\t${answerChoices[i]}. ${a.correct ? ':white_check_mark:' : ':x:'} ${a.answer}`).join('\n')}\n
-:white_large_square: <@!${challenge.initiator_id}>\n:white_large_square: <@!${challenge.challenger_id}>`,
+		description: `${question.question}\n\n${answers.map((a, i) => `\t${!allAnswered ? (a.correct ? ':white_check_mark:' : ':x:') : answerChoices[i]+ '. '} ${a.answer}`).join('\n')}\n\n${userStateDescription}`,
 		footer: {
 			text: `This challenge is for ${challenge.wager.toLocaleString()} coins.`,
 		},
 	}
-		const components = answers.map((a, i) => ({
-			type: MessageComponentTypes.BUTTON,
-			label: answerChoices[i],
-			style: DiscordButtonStyle.SECONDARY,
-			custom_id: `challenge_answer-${challenge.id}-${challenge.current_question}-${a.question_id}-${a.id}`,
-		}));
+	const components = answers.map((a, i) => ({
+		type: MessageComponentTypes.BUTTON,
+		label: answerChoices[i],
+		style: DiscordButtonStyle.SECONDARY,
+		custom_id: `challenge_answer-${challenge.id}-${challenge.current_question}-${a.question_id}-${a.id}`,
+		disabled: disabled ?? false,
+	}));
+
+	return { embedQuestion, components };
+}
+
+export function channelMessageWithQuestion(question: FullQuestion, answers: Answer[], challenge: Challenge) {
+
+	const { embedQuestion, components } = getQuestionEmbedAndComponents(question, answers, challenge);
 
 	return channelMessageWithComponents({
 		embeds: [embedQuestion],

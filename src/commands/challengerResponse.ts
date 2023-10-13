@@ -6,6 +6,7 @@ import { ACK, channelMessage, channelMessageWithComponents, channelMessageWithQu
 import { updateInteraction } from "../utils/updateInteraction";
 import { InteractionResponseType, MessageComponentTypes } from "discord-interactions";
 import { shuffleArray } from "../utils/shuffleArray";
+import { getNewQuestion } from "../utils/newQuestion";
 
 function getChallengeId(custom_id: string) {
 	return Number.parseInt(custom_id.split('-')[1]);
@@ -97,26 +98,9 @@ export async function challengerResponse(message: DiscordMessage, env: Env, ctx:
 		}));
 
 		// Get random question
-		const randomSelect = await env.DB.prepare(`SELECT * FROM questions ORDER BY random() LIMIT 1;`).run();
-		if (!randomSelect || !randomSelect.results.length) {
-			return channelMessage(`No questions found!`);
-		}
-		console.log("random select", randomSelect.results[0].id);
-
-		const questionId = Number(randomSelect.results[0].id);
-
 		// TODO: get questions from the same category
-		const questionQuery = await db.query.question.findFirst({
-			where: eq(question.id, questionId),
-			with: {
-				answers: true,
-				category: true,
-			}
-		});
-
-		if (!questionQuery) {
-			return channelMessage(`No questions found!`);
-		}
+		const questionQuery = await getNewQuestion(env);
+		if (!questionQuery) return channelMessage(`No questions found!`);
 
 		const answers = shuffleArray<Answer>(questionQuery.answers);
 
@@ -151,7 +135,6 @@ export async function challengerResponse(message: DiscordMessage, env: Env, ctx:
 		]);
 
 		ctx.waitUntil(dbUpdate);
-
 		return channelMessageWithQuestion(questionQuery, answers, challengeData);
 	}
 
