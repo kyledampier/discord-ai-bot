@@ -120,23 +120,34 @@ export async function challengerResponse(message: DiscordMessage, env: Env, ctx:
 
 		const answers = shuffleArray<Answer>(questionQuery.answers);
 
+		const questionLogInitiator: typeof question_log.$inferInsert = {
+			challenge_id: challengeId,
+			question_number: challengeData.current_question ?? null,
+			question_id: questionQuery.id,
+			guild_id: challengeData.guild_id,
+			user_id: challengeData.initiator_id,
+			answer_id: answers.filter((a) => a.correct)[0].id ?? null,
+			interaction_id: message.id,
+			interaction_token: message.token,
+		};
+
+		const questionLogChallenger = {
+			...questionLogInitiator,
+			user_id: challengeData.challenger_id,
+		};
+
+		console.log("question_log: initiator", questionLogInitiator);
+
 		const dbUpdate = Promise.all([
 			// update challenge status
 			db.update(challenge).set({
 				status: 'accepted',
 				current_question: challengeData.current_question ?? 0,
 			}).where(eq(challenge.id, challengeId)),
-			// add to question log
-			db.insert(question_log).values({
-				challenge_id: challengeId,
-				question_number: challengeData.current_question ?? 0,
-				question_id: questionQuery.id,
-				guild_id: challengeData.guild_id,
-				user_id: challengeData.interaction_id,
-				answer_id: answers.filter((a) => a.correct)[0].id ?? null,
-				interaction_id: message.id,
-				interaction_token: message.token,
-			})
+
+			// add users to question log
+			db.insert(question_log).values(questionLogInitiator),
+			db.insert(question_log).values(questionLogChallenger),
 		]);
 
 		ctx.waitUntil(dbUpdate);
