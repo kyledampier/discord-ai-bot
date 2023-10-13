@@ -9,7 +9,7 @@ const createQuestionSchema = z.object({
 	category: z.string(),
 	difficulty: z.enum(['easy', 'medium', 'hard']),
 	correct_answer: z.string(),
-	incorrect_answers: z.array(z.string()),
+	incorrect_answers: z.array(z.string()).max(4),
 });
 
 export async function addQuestion(request: Request, env: Env, ctx: ExecutionContext) {
@@ -69,7 +69,19 @@ export async function addQuestion(request: Request, env: Env, ctx: ExecutionCont
 }
 
 export async function getQuestion(request: Request, env: Env) {
-	return new Response(JSON.stringify({}), {
+	const db = getDb(env);
+
+	const questions = await db.query.question.findMany({
+		limit: 10,
+		with: {
+			answers: true,
+			category: true,
+		}
+	});
+
+	return new Response(JSON.stringify({
+		questions,
+	}), {
 		status: 200,
 		headers: {
 			'Content-Type': 'application/json;charset=UTF-8',

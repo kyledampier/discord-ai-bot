@@ -6,3 +6,14 @@ export default function getDb(env: Env) {
 		schema
 	});
 };
+
+export type Question = typeof schema.question.$inferSelect;
+export type Answer = typeof schema.answer.$inferSelect;
+export type Category = typeof schema.questionCategory.$inferSelect;
+
+export type FullQuestion = Question & {
+	answers: Answer[];
+	category: Category | null;
+};
+
+export type Challenge = typeof schema.challenge.$inferSelect;

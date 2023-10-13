@@ -1,19 +1,148 @@
-import { InteractionResponseType } from "discord-interactions";
+import getDb, { Answer } from "../utils/db";
+import { eq, sql } from "drizzle-orm";
+import { challenge, question_log, question } from "../schema";
 import { DiscordMessage } from "../types";
-import { channelMessage, errorResponse } from "../utils/response";
+import { ACK, channelMessage, channelMessageWithComponents, channelMessageWithQuestion, componentACK, errorResponse, updateMessage } from "../utils/response";
+import { updateInteraction } from "../utils/updateInteraction";
+import { InteractionResponseType, MessageComponentTypes } from "discord-interactions";
+import { shuffleArray } from "../utils/shuffleArray";
 
-export function challengerResponse(message: DiscordMessage, env: Env, ctx: ExecutionContext) {
+function getChallengeId(custom_id: string) {
+	return Number.parseInt(custom_id.split('-')[1]);
+}
+
+export async function challengerResponse(message: DiscordMessage, env: Env, ctx: ExecutionContext) {
 
 	if (!message.member) {
 		return errorResponse('You must be in a server to use this command!', 401);
 	}
+	const db = getDb(env);
 
-	const messenger = message.member.user.id;
-	const accepted = message.data.custom_id === 'challenger_accept';
+	const challengeId = getChallengeId(message.data.custom_id!);
+	const challengeQuery = await db.select().from(challenge).where(eq(challenge.id, challengeId));
 
-	if (!accepted) {
-		return channelMessage(`<@!${messenger}> has declined the challenge!`);
+	if (!challengeQuery || !challengeQuery[0]) {
+		console.log('No challenge data found!');
+		return componentACK();
 	}
 
-	return channelMessage(`<@!${messenger}> accepted the challenge!`);
+	const challengeData = challengeQuery[0];
+
+	const clicker = message.member.user.id;
+
+	const accepted = message.data.custom_id?.startsWith('challenge_accept');
+	const isInitiator = challengeData.initiator_id === clicker;
+	const isChallenger = challengeData.challenger_id === clicker;
+
+	if (!accepted) {
+		if (isInitiator || isChallenger) {
+			await db.update(challenge).set({
+				status: 'cancelled',
+			}).where(eq(challenge.id, challengeId));
+
+			return updateMessage({
+				content: `Challenge cancelled...`,
+				components: [
+					{
+						type: MessageComponentTypes.ACTION_ROW,
+						components: [
+							{
+								type: MessageComponentTypes.BUTTON,
+								label: 'Accept',
+								style: 2, // GRAY
+								disabled: true,
+								custom_id: `challenge_accept-${challengeData.id}`,
+							},
+							{
+								type: MessageComponentTypes.BUTTON,
+								label: 'Decline',
+								style: 4, // RED
+								disabled: true,
+								custom_id: `challenger_decline-${challengeData.id}`,
+							},
+						],
+					},
+				],
+			});
+		}
+
+		return componentACK();
+	}
+
+	if (isChallenger) {
+
+		ctx.waitUntil(updateInteraction(env, challengeData.interaction_token ?? "", {
+			content: `<@!${challengeData.challenger_id}> has accepted a challenge from <@!${challengeData.initiator_id}> to a game of trivia for **${challengeData.wager}** :coin:!`,
+			components: [
+				{
+					type: MessageComponentTypes.ACTION_ROW,
+					components: [
+						{
+							type: MessageComponentTypes.BUTTON,
+							label: 'Accept',
+							style: 3, // GREEN
+							disabled: true,
+							custom_id: `challenge_accept-${challengeData.id}`,
+						},
+						{
+							type: MessageComponentTypes.BUTTON,
+							label: 'Decline',
+							style: 2, // GRAY
+							disabled: true,
+							custom_id: `challenger_decline-${challengeData.id}`,
+						},
+					],
+				},
+			],
+		}));
+
+		// Get random question
+		const randomSelect = await env.DB.prepare(`SELECT * FROM questions ORDER BY random() LIMIT 1;`).run();
+		if (!randomSelect || !randomSelect.results.length) {
+			return channelMessage(`No questions found!`);
+		}
+		console.log("random select", randomSelect.results[0].id);
+
+		const questionId = Number(randomSelect.results[0].id);
+
+		// TODO: get questions from the same category
+		const questionQuery = await db.query.question.findFirst({
+			where: eq(question.id, questionId),
+			with: {
+				answers: true,
+				category: true,
+			}
+		});
+
+		if (!questionQuery) {
+			return channelMessage(`No questions found!`);
+		}
+
+		const answers = shuffleArray<Answer>(questionQuery.answers);
+
+		const dbUpdate = Promise.all([
+			// update challenge status
+			db.update(challenge).set({
+				status: 'accepted',
+				current_question: challengeData.current_question ?? 0,
+			}).where(eq(challenge.id, challengeId)),
+			// add to question log
+			db.insert(question_log).values({
+				challenge_id: challengeId,
+				question_number: challengeData.current_question ?? 0,
+				question_id: questionQuery.id,
+				guild_id: challengeData.guild_id,
+				user_id: challengeData.interaction_id,
+				answer_id: answers.filter((a) => a.correct)[0].id ?? null,
+				interaction_id: message.id,
+				interaction_token: message.token,
+			})
+		]);
+
+		ctx.waitUntil(dbUpdate);
+
+		return channelMessageWithQuestion(questionQuery, answers, challengeData);
+	}
+
+	return componentACK();
 }

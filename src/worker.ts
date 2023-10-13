@@ -4,7 +4,8 @@ import { DiscordMessage } from './types';
 import { challengerResponse } from './commands/challengerResponse';
 import router from './api/router';
 import { logInteraction } from './utils/interactionLog';
-import { ACK, errorResponse } from './utils/response';
+import { ACK, componentACK, errorResponse } from './utils/response';
+import { challengeAnswer } from './commands/challengeAnswer';
 
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -55,12 +56,17 @@ export default {
 		logInteraction(message, env, ctx);
 
 		if (message.type === InteractionType.MESSAGE_COMPONENT) {
-			if (message.data.custom_id === 'challenger_accept' || message.data.custom_id === 'challenger_decline') {
+			if (message.data.custom_id?.startsWith('challenge_accept') || message.data.custom_id?.startsWith('challenger_decline')) {
 				return challengerResponse(message, env, ctx);
+			}
+
+			if (message.data.custom_id?.startsWith('challenge_answer')) {
+				return challengeAnswer(message, env, ctx);
 			}
 		}
 
 		if (message.type === InteractionType.APPLICATION_COMMAND) {
+			console.log(message);
 			if (message.data.name === 'ping') {
 				return pong();
 			}

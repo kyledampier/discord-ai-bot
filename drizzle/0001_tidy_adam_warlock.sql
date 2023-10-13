@@ -1,0 +1,1 @@
+ALTER TABLE challenges ADD `interaction_id` text;

@@ -29,3 +29,34 @@ export async function getBalanceState(env: Env, user_id?: string, guild_id?: str
 	}
 }
 
+export type ChallengeState = {
+	challenge: typeof challenge.$inferSelect;
+	question: typeof question.$inferSelect;
+	question_log: typeof question_log.$inferSelect;
+	answer: typeof answer.$inferSelect;
+	answer_log: typeof answer_log.$inferSelect;
+}
+
+// export async function getChallengeState(env: Env, challenge_id: number): Promise<ChallengeState> {
+// 	const db = getDb(env);
+
+// 	const [challengeState] = await Promise.all([
+// 		db.select().from(challenge).where(eq(challenge.id, challenge_id)),
+// 	]);
+
+// 	const [questionState, questionLogState, answerState, answerLogState] = await Promise.all([
+// 		db.select().from(question).where(eq(question.id, challengeState[0].)),
+// 		db.select().from(question_log).where(eq(question_log.challenge_id, challenge_id)),
+// 		db.select().from(answer).where(eq(answer.challenge_id, challenge_id)),
+// 		db.select().from(answer_log).where(eq(answer_log.challenge_id, challenge_id)),
+// 	]);
+
+// 	return {
+// 		challenge: challengeState[0],
+// 		question: questionState[0],
+// 		question_log: questionLogState[0],
+// 		answer: answerState[0],
+// 		answer_log: answerLogState[0],
+// 	}
+// }
+

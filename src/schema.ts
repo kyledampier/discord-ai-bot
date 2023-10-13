@@ -96,6 +96,8 @@ export const challenge = sqliteTable('challenges', {
 	num_questions: integer('num_questions').notNull(),
 	current_question: integer('current_question').default(0),
 	category: integer('category').references(() => questionCategory.id),
+	interaction_id: text('interaction_id'),
+	interaction_token: text('interaction_token'),
 	status: text('status').$type<ChallengeStatus>(),
 	timestamp: integer("timestamp", { mode: "timestamp_ms" }).$defaultFn(() => new Date()),
 }, (challenges) => {
@@ -181,24 +183,22 @@ export const answerRelations = relations(answer, ({ one }) => ({
 
 export const question_log = sqliteTable('question_logs', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
-	challenge_id: integer('challenge_id').references(() => challenge.id),
-	question_number: integer('question_number'),
 	guild_id: text('guild_id').references(() => guild.id),
 	user_id: text('user_id').references(() => user.id),
+	challenge_id: integer('challenge_id').references(() => challenge.id),
 	question_id: integer('question_id').references(() => question.id),
-	answer_id: integer('answer_id').references(() => answer.id),
+	question_number: integer('question_number'),
+	answer_id: integer('answer_id'),
+	interaction_id: text('interaction_id'),
+	interaction_token: text('interaction_token'),
 	correct: integer('correct', { mode: 'boolean' }).default(false),
 }, (question_logs) => {
 	return {
-		questionLogsGuildUserIndex: uniqueIndex('question_logs_user_idx').on(question_logs.guild_id, question_logs.user_id),
+		questionLogsGuildUserChallengeIndex: index('question_logs_user_idx').on(question_logs.guild_id, question_logs.user_id, question_logs.challenge_id),
 	}
 });
 
 export const questionLogRelations = relations(question_log, ({ one }) => ({
-	challenge: one(challenge, {
-		fields: [question_log.challenge_id],
-		references: [challenge.id]
-	}),
 	guild: one(guild, {
 		fields: [question_log.guild_id],
 		references: [guild.id]
@@ -207,14 +207,14 @@ export const questionLogRelations = relations(question_log, ({ one }) => ({
 		fields: [question_log.user_id],
 		references: [user.id]
 	}),
+	challenge: one(challenge, {
+		fields: [question_log.challenge_id],
+		references: [challenge.id]
+	}),
 	question: one(question, {
 		fields: [question_log.question_id],
 		references: [question.id]
-	}),
-	answer: one(answer_log, {
-		fields: [question_log.answer_id],
-		references: [answer_log.id]
-	}),
+	})
 }));
 
 export const answer_log = sqliteTable('answer_logs', {
@@ -225,6 +225,8 @@ export const answer_log = sqliteTable('answer_logs', {
 	guild_id: text('guild_id').references(() => guild.id),
 	user_id: text('user_id').references(() => user.id),
 	answer_id: integer('answer_id').references(() => answer.id),
+	interaction_id: text('interaction_id'),
+	interaction_token: text('interaction_token'),
 	correct: integer('correct', { mode: 'boolean' }).default(false),
 });
 
