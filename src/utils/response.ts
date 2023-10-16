@@ -45,9 +45,9 @@ export function getQuestionEmbedAndComponents(question: FullQuestion, answers: A
 
 	let userStateInitiator = ":white_large_square:";
 	let userStateChallenger = ":white_large_square:";
-	let allAnswered = !state || state?.initiator !== "unanswered" || state?.challenger !== "unanswered";
+	let notAllAnswered = state === undefined || state.initiator === "unanswered" || state.challenger === "unanswered";
 
-	console.log('allAnswered', allAnswered);
+	console.log('notAllAnswered', notAllAnswered);
 
 	if (state) {
 		if (state.initiator === "correct") userStateInitiator = ":white_check_mark:";
@@ -65,7 +65,7 @@ export function getQuestionEmbedAndComponents(question: FullQuestion, answers: A
 			{ name: 'Category', value: (question.category?.name ?? "General Knowledge"), inline: true },
 			{ name: 'Difficulty', value: (question.difficulty ?? "medium") as string, inline: true },
 		],
-		description: `${question.question}\n\n${answers.map((a, i) => `\t${!allAnswered ? (a.correct ? ':white_check_mark:' : ':x:') : answerChoices[i]+ '. '} ${a.answer}`).join('\n')}\n\n${userStateDescription}`,
+		description: `${question.question}\n\n${answers.map((a, i) => `\t${answerChoices[i]}. ${!notAllAnswered ? (a.correct ? ':white_check_mark:' : ':x:') : ''} ${a.answer}`).join('\n')}\n\n${userStateDescription}`,
 		footer: {
 			text: `This challenge is for ${challenge.wager.toLocaleString()} coins.`,
 		},
@@ -73,7 +73,7 @@ export function getQuestionEmbedAndComponents(question: FullQuestion, answers: A
 	const components = answers.map((a, i) => ({
 		type: MessageComponentTypes.BUTTON,
 		label: answerChoices[i],
-		style: DiscordButtonStyle.SECONDARY,
+		style: !notAllAnswered ? (a.correct ? DiscordButtonStyle.SUCCESS : DiscordButtonStyle.DANGER) : DiscordButtonStyle.SECONDARY,
 		custom_id: `challenge_answer-${challenge.id}-${challenge.current_question}-${a.question_id}-${a.id}`,
 		disabled: disabled ?? false,
 	}));

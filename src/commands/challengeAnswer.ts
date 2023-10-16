@@ -31,16 +31,18 @@ function serializeAnswerChoice(custom_id?: string): AnswerChoice {
 }
 
 export async function challengeAnswer(msg: DiscordMessage, env: Env, ctx: ExecutionContext) {
+
 	const db = getDb(env);
 	const answerChoice = serializeAnswerChoice(msg.data.custom_id);
-	const state = await getChallengeState(env, answerChoice.challenge_id, answerChoice.question_id);
+	console.log(answerChoice);
+	const state = await getChallengeState(env, answerChoice.challenge_id, answerChoice.question_id, answerChoice.current_question);
+
+	console.log('challenge state', state);
 
 	if (!state) throw new Error('Challenge not found');
 
 	const isInitiator = state.challenge.initiator_id === msg.member?.user.id;
 	const isChallenger = state.challenge.challenger_id === msg.member?.user.id;
-
-	console.log('isInitiator', isInitiator, 'isChallenger', isChallenger);
 
 	if (!(isInitiator || isChallenger)) {
 		return componentACK();
@@ -173,9 +175,12 @@ export async function challengeAnswer(msg: DiscordMessage, env: Env, ctx: Execut
 		}).where(eq(question_log.id, challengerChallengeLog.id)));
 	}
 
+	const questionState = await env.STATES.get(`challenge-${answerChoice.challenge_id}-${answerChoice.current_question}`).then((s) => JSON.parse(s ?? "{}"));
+	if (!questionState && questionState.answers) throw new Error('Question state not found');
+
 	const { embedQuestion, components } = getQuestionEmbedAndComponents(
 		state.question,
-		state.question.answers,
+		questionState.answers,
 		state.challenge,
 		{
 			initiator: isInitiatorCorrect ? "correct" : "incorrect",
@@ -193,7 +198,6 @@ export async function challengeAnswer(msg: DiscordMessage, env: Env, ctx: Execut
 			},
 		]
 	});
-
 	promises.push(interactionUpdate);
 
 	const answerLogUpdate = db.insert(answer_log).values({
@@ -207,7 +211,6 @@ export async function challengeAnswer(msg: DiscordMessage, env: Env, ctx: Execut
 		interaction_token: msg.token,
 		correct: isCorrect,
 	});
-
 	promises.push(answerLogUpdate);
 
 	let currentQuestionNum = (state.challenge.current_question ?? 0) + 1;
@@ -215,13 +218,12 @@ export async function challengeAnswer(msg: DiscordMessage, env: Env, ctx: Execut
 	console.log('currentQuestionNum', currentQuestionNum, 'num_questions', state.challenge.num_questions);
 
 	if (currentQuestionNum < state.challenge.num_questions) {
+		// generate a new question
 		promises.push(db.update(challenge).set({
 			current_question: currentQuestionNum,
 		}).where(eq(challenge.id, state.challenge.id)));
 
-		// Get random question
-		const newQuestion = await getNewQuestion(env);
-		const answers = shuffleArray(newQuestion.answers);
+		const newQuestion = await getNewQuestion(env, state.challenge.id, currentQuestionNum);
 
 		const questionLogInitiator: typeof question_log.$inferInsert = {
 			challenge_id: state.challenge.id,
@@ -229,7 +231,7 @@ export async function challengeAnswer(msg: DiscordMessage, env: Env, ctx: Execut
 			question_id: newQuestion.id,
 			guild_id: state.challenge.guild_id,
 			user_id: state.challenge.initiator_id,
-			answer_id: answers.filter((a) => a.correct)[0].id ?? null,
+			answer_id: newQuestion.answers.filter((a) => a.correct)[0].id ?? null,
 			interaction_id: msg.id,
 			interaction_token: msg.token,
 		};
@@ -243,7 +245,8 @@ export async function challengeAnswer(msg: DiscordMessage, env: Env, ctx: Execut
 		promises.push(db.insert(question_log).values(questionLogChallenger));
 
 		ctx.waitUntil(Promise.all(promises));
-		return channelMessageWithQuestion(newQuestion, answers, state.challenge);
+		state.challenge.current_question = currentQuestionNum;
+		return channelMessageWithQuestion(newQuestion, newQuestion.answers, state.challenge);
 	}
 
 	// end the challenge

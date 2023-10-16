@@ -36,7 +36,7 @@ export type ChallengeState = {
 	answer_logs: typeof answer_log.$inferSelect[];
 }
 
-export async function getChallengeState(env: Env, challenge_id: number, question_id: number): Promise<ChallengeState> {
+export async function getChallengeState(env: Env, challenge_id: number, question_id: number, current_question=0): Promise<ChallengeState> {
 	const db = getDb(env);
 
 	const [challengeState, questionState] = await Promise.all([
@@ -66,10 +66,16 @@ export async function getChallengeState(env: Env, challenge_id: number, question
 				eq(question_log.guild_id, challengeState.guild_id ?? ""),
 				eq(question_log.challenge_id, challenge_id),
 				eq(question_log.question_id, question_id),
-				eq(question_log.question_number, challengeState.current_question ?? 0),
+				eq(question_log.question_number, current_question),
 			)
 		),
-		db.select().from(answer_log).where(eq(answer_log.challenge_id, challenge_id)),
+		db.select().from(answer_log).where(
+			and(
+				eq(answer_log.challenge_id, challenge_id),
+				eq(answer_log.question_id, question_id),
+				eq(answer_log.question_number, current_question),
+			)
+		),
 	]);
 
 	return {

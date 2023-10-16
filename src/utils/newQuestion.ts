@@ -1,8 +1,9 @@
 import { eq } from "drizzle-orm";
-import getDb from "./db";
-import { question } from "../schema";
+import getDb, { Answer } from "./db";
+import { challenge, question } from "../schema";
+import { shuffleArray } from "./shuffleArray";
 
-export async function getNewQuestion(env: Env, category_id?: number) {
+export async function getNewQuestion(env: Env, challenge_id: number, question_num = 0, category_id?: number) {
 	const db = getDb(env);
 
 	// Get random question
@@ -25,5 +26,12 @@ export async function getNewQuestion(env: Env, category_id?: number) {
 		throw new Error("No questions found");
 	}
 
-	return questionQuery;
+	const output = {
+		...questionQuery,
+		answers: shuffleArray<Answer>(questionQuery.answers),
+		category: questionQuery.category,
+	};
+	env.STATES.put(`challenge-${challenge_id}-${question_num}`, JSON.stringify(output));
+
+	return output;
 }

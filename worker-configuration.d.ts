@@ -4,6 +4,6 @@ interface Env {
 	DISCOED_APP_SECRET: string;
 	DISCORD_APP_TOKEN: string;
 
-	USERS: KVNamespace;
+	STATES: KVNamespace;
 	DB: D1Database;
 }
