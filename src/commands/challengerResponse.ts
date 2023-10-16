@@ -14,8 +14,6 @@ function getChallengeId(custom_id: string) {
 
 export async function challengerResponse(message: DiscordMessage, env: Env, ctx: ExecutionContext) {
 
-	console.log(message);
-
 	if (!message.member) {
 		return errorResponse('You must be in a server to use this command!', 401);
 	}

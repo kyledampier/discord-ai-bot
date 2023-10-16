@@ -1,5 +1,5 @@
 import { InteractionResponseType, InteractionType, verifyKey } from 'discord-interactions';
-import { pong, redeem, balance, trivia } from './commands';
+import { pong, redeem, balance, trivia, generate } from './commands';
 import { DiscordMessage } from './types';
 import { challengerResponse } from './commands/challengerResponse';
 import router from './api/router';
@@ -86,6 +86,10 @@ export default {
 
 			if (message.data.name === 'trivia') {
 				return trivia(message, env, ctx);
+			}
+
+			if (message.data.name === 'generate') {
+				return generate(message, env, ctx);
 			}
 		}
 

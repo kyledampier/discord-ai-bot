@@ -1,4 +1,4 @@
-import { CommandConfig } from "../types/Command";
+import type { CommandConfig } from '../types/Command';
 
 export async function registerCommand(cmd: CommandConfig, appId?: string, token?: string) {
 	if (!appId || !token) {
@@ -18,4 +18,3 @@ export async function registerCommand(cmd: CommandConfig, appId?: string, token?
 		body: JSON.stringify(cmd),
 	});
 }
-
