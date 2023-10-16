@@ -66,7 +66,6 @@ export async function challengeAnswer(msg: DiscordMessage, env: Env, ctx: Execut
 		let interactionUpdate: Promise<any> | undefined;
 		let questionLogUpdate: Promise<any> | undefined;
 
-		console.log(`challenge-${answerChoice.challenge_id}-${answerChoice.current_question}`);
 		const questionState = await env.STATES.get(`challenge-${answerChoice.challenge_id}-${answerChoice.current_question}`).then((s) => { return JSON.parse(s ?? "{}")});
 		if (!questionState || !questionState.answers) throw new Error('Question state not found');
 
@@ -179,7 +178,6 @@ export async function challengeAnswer(msg: DiscordMessage, env: Env, ctx: Execut
 		}).where(eq(question_log.id, challengerChallengeLog.id)));
 	}
 
-	console.log(`challenge-${answerChoice.challenge_id}-${answerChoice.current_question}`);
 	const questionState = await env.STATES.get(`challenge-${answerChoice.challenge_id}-${answerChoice.current_question}`).then((s) => JSON.parse(s ?? "{}"));
 	if (!questionState && questionState.answers) throw new Error('Question state not found');
 
@@ -220,8 +218,6 @@ export async function challengeAnswer(msg: DiscordMessage, env: Env, ctx: Execut
 
 	let currentQuestionNum = (state.challenge.current_question ?? 0) + 1;
 
-	console.log('currentQuestionNum', currentQuestionNum, 'num_questions', state.challenge.num_questions);
-
 	if (currentQuestionNum < state.challenge.num_questions) {
 		// generate a new question
 		promises.push(db.update(challenge).set({
@@ -230,6 +226,7 @@ export async function challengeAnswer(msg: DiscordMessage, env: Env, ctx: Execut
 
 		console.log('getting new question', state.challenge.id, currentQuestionNum);
 		const newQuestion = await getNewQuestion(env, state.challenge.id, currentQuestionNum);
+		promises.push(env.STATES.delete(`challenge-${state.challenge.id}-${answerChoice.current_question}`));
 
 		const questionLogInitiator: typeof question_log.$inferInsert = {
 			challenge_id: state.challenge.id,
@@ -260,6 +257,9 @@ export async function challengeAnswer(msg: DiscordMessage, env: Env, ctx: Execut
 		current_question: currentQuestionNum,
 		status: "completed"
 	}).where(eq(challenge.id, state.challenge.id)));
+
+	// delete the challenge state
+	promises.push(env.STATES.delete(`challenge-${state.challenge.id}-${answerChoice.current_question}`));
 
 	// TODO: determine winner or tie
 

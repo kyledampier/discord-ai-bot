@@ -120,8 +120,6 @@ export async function challengerResponse(message: DiscordMessage, env: Env, ctx:
 			user_id: challengeData.challenger_id,
 		};
 
-		console.log("question_log: initiator", questionLogInitiator);
-
 		const dbUpdate = Promise.all([
 			// update challenge status
 			db.update(challenge).set({
