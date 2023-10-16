@@ -66,13 +66,16 @@ export async function challengeAnswer(msg: DiscordMessage, env: Env, ctx: Execut
 		let interactionUpdate: Promise<any> | undefined;
 		let questionLogUpdate: Promise<any> | undefined;
 
+		const questionState = await env.STATES.get(`challenge-${answerChoice.challenge_id}-${answerChoice.current_question}`).then((s) => JSON.parse(s ?? "{}"));
+		if (!questionState && questionState.answers) throw new Error('Question state not found');
+
 		if (isInitiator) {
 			const questionLog = state.question_logs.filter((q) => q.user_id === state.challenge.initiator_id)[0];
 			if (!questionLog) throw new Error('Question log not found');
 
 			const { embedQuestion, components } = getQuestionEmbedAndComponents(
 				state.question,
-				state.question.answers,
+				questionState.answers,
 				state.challenge,
 				{
 					initiator: isCorrect ? "correct" : "incorrect",
@@ -102,7 +105,7 @@ export async function challengeAnswer(msg: DiscordMessage, env: Env, ctx: Execut
 
 			const { embedQuestion, components } = getQuestionEmbedAndComponents(
 				state.question,
-				state.question.answers,
+				questionState.answers,
 				state.challenge,
 				{
 					initiator: "unanswered",
