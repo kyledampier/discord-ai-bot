@@ -1,5 +1,4 @@
-import { CommandConfig, DiscordMessage } from '../types';
-import { channelMessage } from '../utils/response';
+import { DiscordMessage } from '../types';
 import { serializeInput } from '../utils/serialize';
 import { updateInteraction } from '../utils/updateInteraction';
 
@@ -21,7 +20,7 @@ export const GenerateConfig = {
 			required: false,
 			choices: [
 				{
-					name: '256x256 (cost 250 coins)',
+					name: '256x256 [default] (cost 250 coins)',
 					value: '256x256',
 				},
 				{
@@ -48,6 +47,7 @@ export async function generate(msg: DiscordMessage, env: Env, ctx: ExecutionCont
 	const input = serializeInput(GenerateConfig, msg.data.options!);
 	const prompt = input.prompt;
 	const size = input.size || '256x256';
+	const cost = size === '256x256' ? 250 : size === '512x512' ? 500 : 1000;
 	const interactionToken = msg.token;
 
 	const apiURL = `https://api.openai.com/v1/images/generations`;
@@ -71,14 +71,23 @@ export async function generate(msg: DiscordMessage, env: Env, ctx: ExecutionCont
 			return await updateInteraction(env, interactionToken, {
 				embeds: [
 					{
-						title: `DALL·E 3 Generated Image`,
+						title: `DALL·E 2 Generated Image`,
 						color: 0xffffff,
 						description: `Image generated for <@!${msg.member?.user.id}>\n\nPrompt:\n**${prompt}**`,
 						image: {
 							url: data.data[0].url,
 						},
+						footer: {
+							text: `This image cost ${cost.toLocaleString()} coins to generate.`,
+						},
 					},
 				],
+			});
+		})
+		.catch(async (error) => {
+			console.error(error);
+			return await updateInteraction(env, interactionToken, {
+				content: `Error generating image: ${error}`,
 			});
 		});
 
