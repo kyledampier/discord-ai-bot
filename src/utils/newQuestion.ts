@@ -31,7 +31,7 @@ export async function getNewQuestion(env: Env, challenge_id: number, question_nu
 		answers: shuffleArray<Answer>(questionQuery.answers),
 		category: questionQuery.category,
 	};
-	env.STATES.put(`challenge-${challenge_id}-${question_num}`, JSON.stringify(output));
+	await env.STATES.put(`challenge-${challenge_id}-${question_num}`, JSON.stringify(output));
 
 	return output;
 }

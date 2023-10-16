@@ -66,8 +66,9 @@ export async function challengeAnswer(msg: DiscordMessage, env: Env, ctx: Execut
 		let interactionUpdate: Promise<any> | undefined;
 		let questionLogUpdate: Promise<any> | undefined;
 
-		const questionState = await env.STATES.get(`challenge-${answerChoice.challenge_id}-${answerChoice.current_question}`).then((s) => JSON.parse(s ?? "{}"));
-		if (!questionState && questionState.answers) throw new Error('Question state not found');
+		console.log(`challenge-${answerChoice.challenge_id}-${answerChoice.current_question}`);
+		const questionState = await env.STATES.get(`challenge-${answerChoice.challenge_id}-${answerChoice.current_question}`).then((s) => { return JSON.parse(s ?? "{}")});
+		if (!questionState || !questionState.answers) throw new Error('Question state not found');
 
 		if (isInitiator) {
 			const questionLog = state.question_logs.filter((q) => q.user_id === state.challenge.initiator_id)[0];
@@ -178,6 +179,7 @@ export async function challengeAnswer(msg: DiscordMessage, env: Env, ctx: Execut
 		}).where(eq(question_log.id, challengerChallengeLog.id)));
 	}
 
+	console.log(`challenge-${answerChoice.challenge_id}-${answerChoice.current_question}`);
 	const questionState = await env.STATES.get(`challenge-${answerChoice.challenge_id}-${answerChoice.current_question}`).then((s) => JSON.parse(s ?? "{}"));
 	if (!questionState && questionState.answers) throw new Error('Question state not found');
 
@@ -226,6 +228,7 @@ export async function challengeAnswer(msg: DiscordMessage, env: Env, ctx: Execut
 			current_question: currentQuestionNum,
 		}).where(eq(challenge.id, state.challenge.id)));
 
+		console.log('getting new question', state.challenge.id, currentQuestionNum);
 		const newQuestion = await getNewQuestion(env, state.challenge.id, currentQuestionNum);
 
 		const questionLogInitiator: typeof question_log.$inferInsert = {
