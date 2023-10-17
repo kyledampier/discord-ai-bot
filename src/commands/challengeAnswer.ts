@@ -8,6 +8,7 @@ import { updateInteraction } from "../utils/updateInteraction";
 import { getNewQuestion } from "../utils/newQuestion";
 import { shuffleArray } from "../utils/shuffleArray";
 import { MessageComponentTypes } from "discord-interactions";
+import { updateGuildUserBalance } from "../utils/balance";
 
 type AnswerChoice = {
 	challenge_id: number;
@@ -224,7 +225,6 @@ export async function challengeAnswer(msg: DiscordMessage, env: Env, ctx: Execut
 			current_question: currentQuestionNum,
 		}).where(eq(challenge.id, state.challenge.id)));
 
-		console.log('getting new question', state.challenge.id, currentQuestionNum);
 		const newQuestion = await getNewQuestion(env, state.challenge.id, currentQuestionNum);
 		promises.push(env.STATES.delete(`challenge-${state.challenge.id}-${answerChoice.current_question}`));
 
@@ -261,10 +261,52 @@ export async function challengeAnswer(msg: DiscordMessage, env: Env, ctx: Execut
 	// delete the challenge state
 	promises.push(env.STATES.delete(`challenge-${state.challenge.id}-${answerChoice.current_question}`));
 
-	// TODO: determine winner or tie
+	// init user scores
+	const userScores = new Map<string, number>();
+	if (isInitiator) {
+		userScores.set(state.challenge.initiator_id ?? "", isInitiatorCorrect ? 1 : 0);
+		userScores.set(state.challenge.challenger_id ?? "", 0);
+	} else {
+		userScores.set(state.challenge.initiator_id ?? "", 0);
+		userScores.set(state.challenge.challenger_id ?? "", isChallengerCorrect ? 1 : 0);
+	}
 
-	// TODO: update balances
+	// determine winner or tie
+	const checkWinnerQuery = await db.query.answer_log.findMany({
+		where: (answer_log, { and, eq }) => and(
+			eq(answer_log.challenge_id, state.challenge.id),
+			eq(answer_log.correct, true)
+		),
+	});
+
+	checkWinnerQuery.forEach((correctAnswer) => {
+		const user_id = correctAnswer.user_id;
+		const currentScore = userScores.get(user_id ?? "") ?? 0;
+		userScores.set(user_id ?? "", currentScore + 1);
+	});
+
+	if (userScores.get(state.challenge.initiator_id ?? "") === userScores.get(state.challenge.challenger_id ?? "")) {
+		return channelMessage("Challenge completed! It's a tie!");
+	}
+
+	const winnerId = Array.from(userScores.entries()).reduce((a, b) => a[1] > b[1] ? a : b)[0];
+	const loserId = state.challenge.initiator_id === winnerId ? state.challenge.challenger_id : state.challenge.initiator_id;
+	if (!winnerId || !loserId) throw new Error('Winner or loser not found');
+
+	console.log('winner', winnerId, 'loser', loserId);
+
+	// update balances
+	const [winnerBalance, loserBalance] = await Promise.all([
+		updateGuildUserBalance(env, state.challenge.guild_id ?? "", winnerId, state.challenge.wager ?? 0),
+		updateGuildUserBalance(env, state.challenge.guild_id ?? "", loserId, -(state.challenge.wager ?? 0))
+	]);
+
+	console.log('winner balance', winnerBalance, 'loser balance', loserBalance);
+
+	let channelMsg = `Challenge completed! <@!${winnerId}> won the challenge!\n\n`;
+	channelMsg += `<@!${winnerId}> won ${state.challenge.wager?.toLocaleString()} :coin:!\n\t(Balance - ${winnerBalance.balance.toLocaleString()})\n`;
+	channelMsg += `<@!${loserId}> lost ${state.challenge.wager?.toLocaleString()} :coin:!\n\t(Balance - ${loserBalance.balance.toLocaleString()})\n`;
 
 	ctx.waitUntil(Promise.all(promises));
-	return channelMessage("Challenge completed!");
+	return channelMessage(channelMsg);
 }
