@@ -1,8 +1,10 @@
-import { DiscordMessage } from "../types";
-import { updateGuildUserBalance } from "../utils/balance";
-import { channelMessage } from "../utils/response";
-import { serializeInput } from "../utils/serialize";
-import { getBalanceState } from "../utils/states";
+import { DiscordMessage } from '../types';
+import { updateGuildUserBalance } from '../utils/balance';
+import getDb from '../utils/db';
+import { transfers } from '../schema';
+import { channelMessage } from '../utils/response';
+import { serializeInput } from '../utils/serialize';
+import { getBalanceState } from '../utils/states';
 
 export const TransferConfig = {
 	name: 'transfer',
@@ -25,7 +27,6 @@ export const TransferConfig = {
 };
 
 export async function transfer(msg: DiscordMessage, env: Env, ctx: ExecutionContext) {
-
 	const commandInput = serializeInput(TransferConfig, msg.data.options!);
 
 	if (commandInput.user === msg.member?.user.id) {
@@ -46,7 +47,9 @@ export async function transfer(msg: DiscordMessage, env: Env, ctx: ExecutionCont
 	const transferAmount = Number(commandInput.amount);
 
 	if (senderState.balance.balance < transferAmount) {
-		return channelMessage(`You don't have enough coins to transfer ${transferAmount.toLocaleString(senderState.guild.locale ?? "en-US")} :coin:!`);
+		return channelMessage(
+			`You don't have enough coins to transfer ${transferAmount.toLocaleString(senderState.guild.locale ?? 'en-US')} :coin:!`
+		);
 	}
 
 	if (transferAmount < 1) {
@@ -58,9 +61,27 @@ export async function transfer(msg: DiscordMessage, env: Env, ctx: ExecutionCont
 		updateGuildUserBalance(env, receiverState.guild.id, receiverState.user.id, transferAmount),
 	]);
 
-	let output = `You have transferred ${transferAmount.toLocaleString(senderState.guild.locale ?? "en-US")} :coin: to <@!${commandInput.user}>!\n\n`;
+	let output = `You have transferred ${transferAmount.toLocaleString(senderState.guild.locale ?? 'en-US')} :coin: to <@!${
+		commandInput.user
+	}>!\n\n`;
 	output += `**You now have ${senderBalance.balance.toLocaleString()} :coin:!**\n`;
 	output += `**<@!${commandInput.user}> now has ${receiverBalance.balance.toLocaleString()} :coin:!**`;
+
+	const db = getDb(env);
+
+	ctx.waitUntil(
+		db
+			.insert(transfers)
+			.values({
+				guild_id: senderState.guild.id,
+				sender_id: senderState.user.id,
+				receiver_id: receiverState.user.id,
+				amount: transferAmount,
+				interaction_id: msg.id,
+				interaction_token: msg.token,
+			})
+			.execute()
+	);
 
 	return channelMessage(output);
 }

@@ -1,6 +1,14 @@
 import { sql, relations } from "drizzle-orm";
 import { sqliteTable, text, integer, uniqueIndex, index, blob } from 'drizzle-orm/sqlite-core';
 
+export const api_key = sqliteTable('api_keys', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	key: text('key').notNull(),
+	enabled: integer('enabled', { mode: 'boolean' }).default(true).notNull(),
+	created_by: text('created_by'),
+	created_at: integer("created_at", { mode: "timestamp_ms" }).default(sql`strftime('%s','now')`).notNull(),
+});
+
 export const user = sqliteTable('discord_users', {
 	id: text('id').primaryKey(),
 	username: text('username').notNull(),

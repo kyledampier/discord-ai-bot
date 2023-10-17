@@ -43,6 +43,13 @@
       "when": 1697506090297,
       "tag": "0005_marvelous_prowler",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1697555225104,
+      "tag": "0006_magenta_vance_astro",
+      "breakpoints": true
     }
   ]
 }
