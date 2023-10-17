@@ -1,5 +1,7 @@
+import { image_generation_log } from '../schema';
 import { DiscordMessage } from '../types';
 import { updateGuildUserBalance } from '../utils/balance';
+import getDb from '../utils/db';
 import { channelMessage } from '../utils/response';
 import { serializeInput } from '../utils/serialize';
 import { getBalanceState } from '../utils/states';
@@ -33,7 +35,7 @@ export const GenerateConfig = {
 				{
 					name: '256x256 (cost 800 coins)',
 					value: '256x256',
-				}
+				},
 			],
 		},
 	],
@@ -47,6 +49,8 @@ type OpenAIImageGenerationResponse = {
 };
 
 export async function generate(msg: DiscordMessage, env: Env, ctx: ExecutionContext) {
+	const db = getDb(env);
+
 	const input = serializeInput(GenerateConfig, msg.data.options!);
 	const prompt = input.prompt;
 	const size = input.size || '256x256';
@@ -95,7 +99,18 @@ export async function generate(msg: DiscordMessage, env: Env, ctx: ExecutionCont
 				});
 			} else {
 				console.log('generated image url', data.data[0].url);
-				await updateGuildUserBalance(env, msg.guild_id, msg.member?.user.id ?? '', newBalance);
+				await Promise.all([
+					updateGuildUserBalance(env, msg.guild_id, msg.member?.user.id ?? '', newBalance),
+					db.insert(image_generation_log).values({
+						guild_id: msg.guild_id,
+						user_id: msg.member?.user.id ?? null,
+						prompt: prompt as string,
+						size: size as string,
+						interaction_id: msg.id,
+						interaction_token: interactionToken,
+						image_url: data.data[0].url,
+					}),
+				]);
 			}
 			return await updateInteraction(env, interactionToken, {
 				embeds: [

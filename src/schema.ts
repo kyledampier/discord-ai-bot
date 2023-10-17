@@ -252,3 +252,25 @@ export const answerLogRelations = relations(answer_log, ({ one }) => ({
 		references: [answer.id]
 	}),
 }));
+
+export const image_generation_log = sqliteTable('image_generation_logs', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	guild_id: text('guild_id').references(() => guild.id),
+	user_id: text('user_id').references(() => user.id),
+	prompt: text('prompt'),
+	size: text('size'),
+	interaction_id: text('interaction_id'),
+	interaction_token: text('interaction_token'),
+	image_url: text('image_url'),
+});
+
+export const imageGenerationLogRelations = relations(image_generation_log, ({ one }) => ({
+	guild: one(guild, {
+		fields: [image_generation_log.guild_id],
+		references: [guild.id]
+	}),
+	user: one(user, {
+		fields: [image_generation_log.user_id],
+		references: [user.id]
+	}),
+}));
