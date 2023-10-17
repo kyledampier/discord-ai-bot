@@ -100,7 +100,7 @@ export async function generate(msg: DiscordMessage, env: Env, ctx: ExecutionCont
 			} else {
 				console.log('generated image url', data.data[0].url);
 				await Promise.all([
-					updateGuildUserBalance(env, msg.guild_id, msg.member?.user.id ?? '', newBalance),
+					updateGuildUserBalance(env, msg.guild_id, msg.member?.user.id ?? '', -cost),
 					db.insert(image_generation_log).values({
 						guild_id: msg.guild_id,
 						user_id: msg.member?.user.id ?? null,
