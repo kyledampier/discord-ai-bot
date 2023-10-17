@@ -1,5 +1,8 @@
 import { DiscordMessage } from '../types';
+import { updateGuildUserBalance } from '../utils/balance';
+import { channelMessage } from '../utils/response';
 import { serializeInput } from '../utils/serialize';
+import { getBalanceState } from '../utils/states';
 import { updateInteraction } from '../utils/updateInteraction';
 
 export const GenerateConfig = {
@@ -20,17 +23,17 @@ export const GenerateConfig = {
 			required: false,
 			choices: [
 				{
-					name: '256x256 [default] (cost 250 coins)',
-					value: '256x256',
+					name: '1024x1024 [default] (cost 1000 coins)',
+					value: '1024x1024',
 				},
 				{
-					name: '512x512 (cost 500 coins)',
+					name: '512x512 (cost 900 coins)',
 					value: '512x512',
 				},
 				{
-					name: '1024x1024 (cost 1000 coins)',
-					value: '1024x1024',
-				},
+					name: '256x256 (cost 800 coins)',
+					value: '256x256',
+				}
 			],
 		},
 	],
@@ -47,8 +50,23 @@ export async function generate(msg: DiscordMessage, env: Env, ctx: ExecutionCont
 	const input = serializeInput(GenerateConfig, msg.data.options!);
 	const prompt = input.prompt;
 	const size = input.size || '256x256';
-	const cost = size === '256x256' ? 250 : size === '512x512' ? 500 : 1000;
+	const cost = size === '1024x1024' ? 1000 : size === '512x512' ? 900 : 800;
 	const interactionToken = msg.token;
+
+	let userState = await getBalanceState(env, msg.member?.user.id, msg.guild_id);
+	console.log(userState);
+
+	if (!userState.user || !userState.guild || !userState.balance) {
+		return channelMessage(`You have 0 :coin:. Please use \`/redeem\` to redeem your first :coin:!`);
+	}
+
+	if (userState.balance.balance < cost) {
+		return channelMessage(
+			`You don't have enough coins to generate an image. This image would cost ${cost.toLocaleString()} coins to generate.\n\nYou can \`/redeem\` :coin: once every hour, day, week and month.`
+		);
+	}
+
+	const newBalance = userState.balance.balance - cost;
 
 	const apiURL = `https://api.openai.com/v1/images/generations`;
 
@@ -67,7 +85,18 @@ export async function generate(msg: DiscordMessage, env: Env, ctx: ExecutionCont
 		.then((response) => response.json() as Promise<OpenAIImageGenerationResponse>)
 		.then(async (response) => {
 			const data = await response;
-			console.log(data);
+			if (!data.data || data.data.length === 0) {
+				return await updateInteraction(env, interactionToken, {
+					content: `Error generating image: ${data}`,
+				});
+			} else if (!data.data[0].url) {
+				return await updateInteraction(env, interactionToken, {
+					content: `Error generating image: ${data}`,
+				});
+			} else {
+				console.log('generated image url', data.data[0].url);
+				await updateGuildUserBalance(env, msg.guild_id, msg.member?.user.id ?? '', newBalance);
+			}
 			return await updateInteraction(env, interactionToken, {
 				embeds: [
 					{
@@ -78,7 +107,7 @@ export async function generate(msg: DiscordMessage, env: Env, ctx: ExecutionCont
 							url: data.data[0].url,
 						},
 						footer: {
-							text: `This image cost ${cost.toLocaleString()} coins to generate.`,
+							text: `This image cost ${cost.toLocaleString()} coins to generate. Your new balance is ${newBalance.toLocaleString()} coins.`,
 						},
 					},
 				],

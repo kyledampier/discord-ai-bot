@@ -67,6 +67,11 @@ export default {
 
 		if (message.type === InteractionType.APPLICATION_COMMAND) {
 			console.log(message);
+
+			if (!message.data) {
+				return errorResponse('Invalid request signature', 401);
+			}
+
 			if (message.data.name === 'ping') {
 				return pong();
 			}
