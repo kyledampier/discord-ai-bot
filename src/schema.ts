@@ -7,6 +7,10 @@ export const api_key = sqliteTable('api_keys', {
 	enabled: integer('enabled', { mode: 'boolean' }).default(true).notNull(),
 	created_by: text('created_by'),
 	created_at: integer("created_at", { mode: "timestamp_ms" }).default(sql`strftime('%s','now')`).notNull(),
+}, (api_keys) => {
+	return {
+		apiKeysKeyIndex: uniqueIndex('api_keys_key_idx').on(api_keys.key),
+	}
 });
 
 export const user = sqliteTable('discord_users', {

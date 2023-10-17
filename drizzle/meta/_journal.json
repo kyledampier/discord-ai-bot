@@ -50,6 +50,13 @@
       "when": 1697555225104,
       "tag": "0006_magenta_vance_astro",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1697555868265,
+      "tag": "0007_plain_magus",
+      "breakpoints": true
     }
   ]
 }
