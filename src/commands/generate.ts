@@ -53,7 +53,7 @@ export async function generate(msg: DiscordMessage, env: Env, ctx: ExecutionCont
 
 	const input = serializeInput(GenerateConfig, msg.data.options!);
 	const prompt = input.prompt;
-	const size = input.size || '256x256';
+	const size = input.size || '1024x1024';
 	const cost = size === '1024x1024' ? 1000 : size === '512x512' ? 900 : 800;
 	const interactionToken = msg.token;
 
