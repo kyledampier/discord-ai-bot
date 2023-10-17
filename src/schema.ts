@@ -274,3 +274,33 @@ export const imageGenerationLogRelations = relations(image_generation_log, ({ on
 		references: [user.id]
 	}),
 }));
+
+export const transfers = sqliteTable('transfers', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	guild_id: text('guild_id').references(() => guild.id),
+	sender_id: text('sender_id').references(() => user.id),
+	receiver_id: text('receiver_id').references(() => user.id),
+	amount: integer('amount').notNull(),
+	interaction_id: text('interaction_id'),
+	interaction_token: text('interaction_token'),
+	timestamp: integer("timestamp", { mode: "timestamp_ms" }).$defaultFn(() => new Date()),
+}, (transfers) => {
+	return {
+		transfersGuildSenderReceiverIndex: index('transfers_sender_receiver_idx').on(transfers.guild_id, transfers.sender_id, transfers.receiver_id),
+	}
+});
+
+export const transferRelations = relations(transfers, ({ one }) => ({
+	guild: one(guild, {
+		fields: [transfers.guild_id],
+		references: [guild.id]
+	}),
+	sender: one(user, {
+		fields: [transfers.sender_id],
+		references: [user.id]
+	}),
+	receiver: one(user, {
+		fields: [transfers.receiver_id],
+		references: [user.id]
+	}),
+}));

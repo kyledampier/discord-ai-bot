@@ -1,4 +1,4 @@
-import { registerCommand, PongConfig, TriviaConfig, RedeemConfig, BalanceConfig, GenerateConfig } from "../../commands/index";
+import { registerCommand, PongConfig, TriviaConfig, RedeemConfig, BalanceConfig, GenerateConfig, TransferConfig } from "../../commands/index";
 import { CommandConfig } from "../../types";
 
 export const commands = new Map<string, CommandConfig>();
@@ -7,6 +7,7 @@ commands.set("trivia", TriviaConfig);
 commands.set("redeem", RedeemConfig);
 commands.set("balance", BalanceConfig);
 commands.set("generate", GenerateConfig);
+commands.set("transfer", TransferConfig);
 
 export default async function registerCommands(command: string, env: Env) {
 	const cmd = commands.get(command);

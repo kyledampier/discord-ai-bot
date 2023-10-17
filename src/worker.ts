@@ -1,10 +1,10 @@
 import { InteractionResponseType, InteractionType, verifyKey } from 'discord-interactions';
-import { pong, redeem, balance, trivia, generate } from './commands';
+import { pong, redeem, balance, trivia, generate, transfer } from './commands';
 import { DiscordMessage } from './types';
 import { challengerResponse } from './commands/challengerResponse';
 import router from './api/router';
 import { logInteraction } from './utils/interactionLog';
-import { ACK, componentACK, errorResponse } from './utils/response';
+import { ACK, errorResponse } from './utils/response';
 import { challengeAnswer } from './commands/challengeAnswer';
 
 export default {
@@ -95,6 +95,10 @@ export default {
 
 			if (message.data.name === 'generate') {
 				return generate(message, env, ctx);
+			}
+
+			if (message.data.name === 'transfer') {
+				return transfer(message, env, ctx);
 			}
 		}
 
