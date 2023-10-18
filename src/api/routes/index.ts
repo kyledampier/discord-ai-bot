@@ -1,6 +1,6 @@
 import deleteCommand from './deleteCommand';
 import { getQuestion, addQuestion, deleteQuestion } from './question';
-import { getCategories } from './category';
+import { getCategories, getCategoryCounts } from './category';
 import registerCommands from './registerCommands';
 import { search } from './search';
 
@@ -11,6 +11,7 @@ export {
 	deleteQuestion,
 	search,
 	getCategories,
+	getCategoryCounts,
 	// commands
 	registerCommands,
 	deleteCommand,
