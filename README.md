@@ -21,3 +21,10 @@ This will output a `####-abcd-efg.sql` file into the drizzle directory. This wil
 ```bash
 npx wrangler d1 execute discord-bot --file=./drizzle/<GENERATED_SQL>
 ```
+
+## Trivia Question Sources
+
+- [OpenTriviaQA](https://github.com/uberspot/OpenTriviaQA)
+  - roughly 42,590 questions
+- [HQ Trivia Dataset](https://www.kaggle.com/datasets/theriley106/hq-trivia-question-database)
+  - roughly 1,463 questions
