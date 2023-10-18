@@ -1,5 +1,5 @@
 import { Router } from 'itty-router';
-import { getQuestion, addQuestion, registerCommands, deleteCommand, deleteQuestion, search } from './routes';
+import { getQuestion, addQuestion, registerCommands, deleteCommand, deleteQuestion, search, getCategories } from './routes';
 import { withParams } from 'itty-router';
 import getDb from '../utils/db';
 import { api_key } from '../schema';
@@ -31,6 +31,7 @@ router.get('/api/question', withAPIKey, (request, env, ctx) => getQuestion(reque
 router.post('/api/question', withAPIKey, (request, env, ctx) => addQuestion(request, env, ctx));
 router.delete('/api/question/:id', withAPIKey, withParams, ({ params }, env, ctx) => deleteQuestion(params.id, env));
 router.get('/api/search', withAPIKey, withParams, (request, env, ctx) => search(request, env, ctx));
+router.get('/api/categories', withAPIKey, (request, env, ctx) => getCategories(env));
 
 // API route to register commands with Discord
 router.get('/api/register/:command', withAPIKey, withParams, ({ params }, env, ctx) => registerCommands(params.command, env));
