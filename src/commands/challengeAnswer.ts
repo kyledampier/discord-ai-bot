@@ -59,7 +59,7 @@ export async function challengeAnswer(msg: DiscordMessage, env: Env, ctx: Execut
 	const isCorrect = correctAnswer === answerChoice.answer_id;
 
 	// if both have answered, return an ack
-	if (initiatorAnswered && challengerAnswered) return componentACK();
+	if (initiatorAnswered && challengerAnswered) return componentACK(); // TODO: check if this is needed in rare cases
 	if ((isInitiator && initiatorAnswered) || (isChallenger && challengerAnswered)) return componentACK();
 
 	// if both have not answered yet, update the interaction for the users

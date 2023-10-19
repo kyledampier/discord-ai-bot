@@ -5,6 +5,7 @@ import { RedeemConfig, redeem } from './redeem';
 import { BalanceConfig, balance } from './balance';
 import { GenerateConfig, generate } from './generate';
 import { TransferConfig, transfer } from './transfer';
+import { LeaderboardConfig, leaderboard } from './leaderboard';
 
 export {
 	registerCommand,
@@ -20,4 +21,6 @@ export {
 	generate,
 	TransferConfig,
 	transfer,
+	LeaderboardConfig,
+	leaderboard,
 }

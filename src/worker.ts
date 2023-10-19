@@ -1,5 +1,5 @@
-import { InteractionResponseType, InteractionType, verifyKey } from 'discord-interactions';
-import { pong, redeem, balance, trivia, generate, transfer } from './commands';
+import { InteractionType, verifyKey } from 'discord-interactions';
+import { pong, redeem, balance, trivia, generate, transfer, leaderboard } from './commands';
 import { DiscordMessage } from './types';
 import { challengerResponse } from './commands/challengerResponse';
 import router from './api/router';
@@ -82,6 +82,10 @@ export default {
 
 			if (message.data.name === 'balance') {
 				return balance(message, env, ctx);
+			}
+
+			if (message.data.name === 'leaderboard') {
+				return leaderboard(message, env, ctx);
 			}
 
 			// all other commands require an input
