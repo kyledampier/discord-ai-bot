@@ -6,6 +6,7 @@ import { BalanceConfig, balance } from './balance';
 import { GenerateConfig, generate } from './generate';
 import { TransferConfig, transfer } from './transfer';
 import { LeaderboardConfig, leaderboard } from './leaderboard';
+import { RoastConfig, roast } from './roast';
 
 export {
 	registerCommand,
@@ -23,4 +24,6 @@ export {
 	transfer,
 	LeaderboardConfig,
 	leaderboard,
-}
+	RoastConfig,
+	roast,
+};

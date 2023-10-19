@@ -1,5 +1,5 @@
 import { InteractionType, verifyKey } from 'discord-interactions';
-import { pong, redeem, balance, trivia, generate, transfer, leaderboard } from './commands';
+import { pong, redeem, balance, trivia, generate, transfer, leaderboard, roast } from './commands';
 import { DiscordMessage } from './types';
 import { challengerResponse } from './commands/challengerResponse';
 import router from './api/router';
@@ -9,7 +9,6 @@ import { challengeAnswer } from './commands/challengeAnswer';
 
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-
 		const url = new URL(request.url);
 
 		// manage api routes
@@ -99,6 +98,10 @@ export default {
 
 			if (message.data.name === 'generate') {
 				return generate(message, env, ctx);
+			}
+
+			if (message.data.name === 'roast') {
+				return roast(message, env, ctx);
 			}
 
 			if (message.data.name === 'transfer') {
