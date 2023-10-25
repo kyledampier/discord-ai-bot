@@ -28,3 +28,5 @@ npx wrangler d1 execute discord-bot --file=./drizzle/<GENERATED_SQL>
   - roughly 42,590 questions
 - [HQ Trivia Dataset](https://www.kaggle.com/datasets/theriley106/hq-trivia-question-database)
   - roughly 1,463 questions
+
+updating something to commit to GitHub
