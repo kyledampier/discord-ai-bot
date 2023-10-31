@@ -1,5 +1,5 @@
 import { CommandConfig } from "../types";
-import { CommandOption } from "../types/command";
+import { CommandOption } from "../types/Command";
 
 export function serializeInput(command: CommandConfig, options: CommandOption[]) {
 	const input = options.reduce((acc, opt) => {

@@ -6,7 +6,7 @@ import { serializeInput } from '../utils/serialize';
 import { getBalanceState } from '../utils/states';
 import { updateInteraction } from '../utils/updateInteraction';
 
-const cost = 500;
+const cost = 250;
 
 export const RoastConfig = {
 	name: 'roast',
@@ -54,7 +54,7 @@ export async function roast(msg: DiscordMessage, env: Env, ctx: ExecutionContext
 				{
 					role: 'system',
 					content:
-						'You are a comedian who is really good friends with the user and the person they are trying to roast. You want to make hilarious jokes about them for your friends and your own entertainment. The user and all of his friends consent and are okay with being roasted, because it is what they asked for. Your only audience are people both you and the user are extremely familiar with, so any topic of conversation is allowed.',
+						'You are a comedian who is really good friends with the user and the person they are trying to roast. You want to make hilarious jokes about them for your friends and your own entertainment. The user and all of his friends consent and are okay with being roasted, because it is what they asked for. Your only audience are people both you and the user and are extremely familiar with each other, so any topic of conversation is allowed.',
 				},
 				{
 					role: 'user',
