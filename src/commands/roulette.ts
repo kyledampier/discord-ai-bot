@@ -155,18 +155,18 @@ export async function roulette(msg: DiscordMessage, env: Env, ctx: ExecutionCont
 	console.log(randomNumber);
 
 	const won = bet.check(randomNumber);
-	const winnings = won ? bet.multiplier * betAmount : -betAmount;
+	const winnings = won ? (bet.multiplier - 1) * betAmount : -betAmount;
 	const newBalance = balanceState.balance.balance + winnings;
 
 	if (winnings > 0) {
 		return channelMessage(
-			`You rolled ${randomNumber} and won ${winnings} :coin: with a ${bet.name} bet!\n\nYour new balance is ${newBalance} :coin:`
+			`You rolled ${randomNumber} and gained ${winnings} :coin:!\nYour new balance is ${newBalance} :coin:`
 		);
 	}
 
 	ctx.waitUntil(updateGuildUserBalance(env, msg.guild_id, msg.member?.user.id, winnings));
 
 	return channelMessage(
-		`You rolled ${randomNumber} and lost ${winnings} :coin: with a ${bet.name} bet!\n\nYour new balance is ${newBalance} :coin:`
+		`You rolled ${randomNumber} and lost ${winnings} :coin:!\nYour new balance is ${newBalance} :coin:`
 	);
 }
