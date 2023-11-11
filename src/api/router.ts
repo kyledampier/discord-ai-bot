@@ -11,6 +11,7 @@ import {
 	search,
 	getCategories,
 	getCategoryCounts,
+	getCardImage
 } from './routes';
 
 const router = Router();
@@ -43,6 +44,9 @@ router.get('/api/categories/count', withAPIKey, (request, env, ctx) => getCatego
 // API route to register commands with Discord
 router.get('/api/register/:command', withAPIKey, withParams, ({ params }, env, ctx) => registerCommands(params.command, env));
 router.delete('/api/register/:command', withAPIKey, withParams, ({ params }, env, ctx) => deleteCommand(params.command, env));
+
+// API route for returning images of cards
+router.get('/api/card/img/:card', ({ params }, env, ctx) => getCardImage(params.card, env, ctx));
 
 router.all('*', () => new Response('Not Found.', { status: 404 }));
 

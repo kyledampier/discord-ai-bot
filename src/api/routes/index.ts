@@ -2,6 +2,7 @@ import deleteCommand from './deleteCommand';
 import { getQuestion, addQuestion, deleteQuestion } from './question';
 import { getCategories, getCategoryCounts } from './category';
 import registerCommands from './registerCommands';
+import { getCardImage } from './cardImg';
 import { search } from './search';
 
 export {
@@ -15,4 +16,6 @@ export {
 	// commands
 	registerCommands,
 	deleteCommand,
+	// card image
+	getCardImage,
 };

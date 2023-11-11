@@ -1,8 +1,8 @@
-import { InteractionResponseType, MessageComponentTypes } from "discord-interactions";
-import { Answer, Challenge, FullQuestion } from "./db";
-import { shuffleArray } from "./shuffleArray";
-import { DiscordEmbed } from "../types/DiscordEmbed";
-import { DiscordButtonStyle, DiscordComponent } from "../types/DiscordComponents";
+import { InteractionResponseType, MessageComponentTypes } from 'discord-interactions';
+import { Answer, Challenge, FullQuestion } from './db';
+import { shuffleArray } from './shuffleArray';
+import { DiscordEmbed } from '../types/DiscordEmbed';
+import { DiscordButtonStyle, DiscordComponent } from '../types/DiscordComponents';
 
 export function channelMessage(content: string) {
 	return new Response(
@@ -20,7 +20,7 @@ export function channelMessage(content: string) {
 	);
 }
 
-export function channelMessageWithComponents(data: { content?: string, components: DiscordComponent[], embeds?: DiscordEmbed[] }) {
+export function channelMessageWithComponents(data: { content?: string; components: DiscordComponent[]; embeds?: DiscordEmbed[] }) {
 	return new Response(
 		JSON.stringify({
 			type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -35,41 +35,48 @@ export function channelMessageWithComponents(data: { content?: string, component
 }
 
 export type QuestionAnswerState = {
-	initiator: "correct" | "incorrect" | "unanswered";
-	challenger: "correct" | "incorrect" | "unanswered";
-}
+	initiator: 'correct' | 'incorrect' | 'unanswered';
+	challenger: 'correct' | 'incorrect' | 'unanswered';
+};
 
-export function getQuestionEmbedAndComponents(question: FullQuestion, answers: Answer[], challenge: Challenge, state?: QuestionAnswerState, disabled?: boolean) {
+export function getQuestionEmbedAndComponents(
+	question: FullQuestion,
+	answers: Answer[],
+	challenge: Challenge,
+	state?: QuestionAnswerState,
+	disabled?: boolean
+) {
+	const answerChoices = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']; // max 12 answers (really only 5)
 
-	const answerChoices = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]; // max 12 answers (really only 5)
-
-	let userStateInitiator = ":white_large_square:";
-	let userStateChallenger = ":white_large_square:";
-	let notAllAnswered = state === undefined || state.initiator === "unanswered" || state.challenger === "unanswered";
+	let userStateInitiator = ':white_large_square:';
+	let userStateChallenger = ':white_large_square:';
+	let notAllAnswered = state === undefined || state.initiator === 'unanswered' || state.challenger === 'unanswered';
 
 	console.log('notAllAnswered', notAllAnswered);
 
 	if (state) {
-		if (state.initiator === "correct") userStateInitiator = ":white_check_mark:";
-		if (state.initiator === "incorrect") userStateInitiator = ":x:";
+		if (state.initiator === 'correct') userStateInitiator = ':white_check_mark:';
+		if (state.initiator === 'incorrect') userStateInitiator = ':x:';
 
-		if (state.challenger === "correct") userStateChallenger = ":white_check_mark:";
-		if (state.challenger === "incorrect") userStateChallenger = ":x:";
+		if (state.challenger === 'correct') userStateChallenger = ':white_check_mark:';
+		if (state.challenger === 'incorrect') userStateChallenger = ':x:';
 	}
 	const userStateDescription = `${userStateInitiator} <@!${challenge.initiator_id}>\n${userStateChallenger} <@!${challenge.challenger_id}>`;
 
 	const embedQuestion: DiscordEmbed = {
-		color: 0x5865F2,
+		color: 0x5865f2,
 		title: `Question ${(challenge.current_question ?? 0) + 1} of ${challenge.num_questions}`,
 		fields: [
-			{ name: 'Category', value: (question.category?.name ?? "General Knowledge"), inline: true },
-			{ name: 'Difficulty', value: (question.difficulty ?? "medium") as string, inline: true },
+			{ name: 'Category', value: question.category?.name ?? 'General Knowledge', inline: true },
+			{ name: 'Difficulty', value: (question.difficulty ?? 'medium') as string, inline: true },
 		],
-		description: `${question.question}\n\n${answers.map((a, i) => `\t${answerChoices[i]}. ${!notAllAnswered ? (a.correct ? ':white_check_mark:' : ':x:') : ''} ${a.answer}`).join('\n')}\n\n${userStateDescription}`,
+		description: `${question.question}\n\n${answers
+			.map((a, i) => `\t${answerChoices[i]}. ${!notAllAnswered ? (a.correct ? ':white_check_mark:' : ':x:') : ''} ${a.answer}`)
+			.join('\n')}\n\n${userStateDescription}`,
 		footer: {
 			text: `This challenge is for ${challenge.wager.toLocaleString()} coins.`,
 		},
-	}
+	};
 	const components = answers.map((a, i) => ({
 		type: MessageComponentTypes.BUTTON,
 		label: answerChoices[i],
@@ -82,7 +89,6 @@ export function getQuestionEmbedAndComponents(question: FullQuestion, answers: A
 }
 
 export function channelMessageWithQuestion(question: FullQuestion, answers: Answer[], challenge: Challenge) {
-
 	const { embedQuestion, components } = getQuestionEmbedAndComponents(question, answers, challenge);
 
 	return channelMessageWithComponents({
@@ -92,7 +98,7 @@ export function channelMessageWithQuestion(question: FullQuestion, answers: Answ
 				type: MessageComponentTypes.ACTION_ROW,
 				components,
 			},
-		]
+		],
 	});
 }
 
@@ -111,14 +117,17 @@ export function updateMessage(data: any) {
 }
 
 export function componentACK() {
-	return new Response(JSON.stringify({
-		type: InteractionResponseType.DEFERRED_UPDATE_MESSAGE,
-	}), {
-		status: 200,
-		headers: {
-			'Content-Type': 'application/json',
-		},
-	});
+	return new Response(
+		JSON.stringify({
+			type: InteractionResponseType.DEFERRED_UPDATE_MESSAGE,
+		}),
+		{
+			status: 200,
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		}
+	);
 }
 
 export function errorResponse(message: string, status: number) {

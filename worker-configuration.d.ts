@@ -7,4 +7,5 @@ interface Env {
 
 	STATES: KVNamespace;
 	DB: D1Database;
+	FILES: R2Bucket;
 }
