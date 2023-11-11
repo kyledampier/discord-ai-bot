@@ -51,8 +51,8 @@ export const RouletteConfig: CommandConfig = {
 					value: '19-36',
 				},
 				{
-					name: '0-11 (3 to 1)',
-					value: '0-11',
+					name: '1-12 (3 to 1)',
+					value: '1-12',
 				},
 				{
 					name: '12-24 (3 to 1)',
@@ -137,7 +137,7 @@ export async function roulette(msg: DiscordMessage, env: Env, ctx: ExecutionCont
 	const balanceState = await getBalanceState(env, msg.member?.user.id, msg.guild_id);
 	if (betAmount > balanceState.balance.balance) {
 		return channelMessage(
-			`You don't have enough coins to make that bet! You have ${balanceState.balance.balance} :coin: and you tried to bet ${betAmount} :coin:`
+			`You don't have enough coins to make that bet!\nYou have ${balanceState.balance.balance} :coin: and you tried to bet ${betAmount} :coin:`
 		);
 	}
 
@@ -159,9 +159,13 @@ export async function roulette(msg: DiscordMessage, env: Env, ctx: ExecutionCont
 	const newBalance = balanceState.balance.balance + winnings;
 
 	if (winnings > 0) {
-		return channelMessage(`You rolled ${randomNumber} and gained ${winnings} :coin:!\nYour new balance is ${newBalance.toLocaleString()} :coin:`);
+		return channelMessage(
+			`You rolled ${randomNumber} and gained ${winnings} :coin:!\nYour new balance is ${newBalance.toLocaleString()} :coin:`
+		);
 	}
 
 	ctx.waitUntil(updateGuildUserBalance(env, msg.guild_id, msg.member?.user.id, winnings));
-	return channelMessage(`You rolled ${randomNumber} and lost ${winnings} :coin:!\nYour new balance is ${newBalance.toLocaleString()} :coin:`);
+	return channelMessage(
+		`You rolled ${randomNumber} and lost ${winnings} :coin:!\nYour new balance is ${newBalance.toLocaleString()} :coin:`
+	);
 }
