@@ -20,7 +20,7 @@ export const RouletteConfig: CommandConfig = {
 			name: 'bet_type',
 			description: 'The type of bet to make',
 			type: 3,
-			required: false,
+			required: true,
 			choices: [
 				{
 					name: 'Even (2 to 1)',
@@ -39,7 +39,7 @@ export const RouletteConfig: CommandConfig = {
 					value: 'black',
 				},
 				{
-					name: 'green (14 to 1)',
+					name: 'Green (14 to 1)',
 					value: 'green',
 				},
 				{
@@ -159,14 +159,9 @@ export async function roulette(msg: DiscordMessage, env: Env, ctx: ExecutionCont
 	const newBalance = balanceState.balance.balance + winnings;
 
 	if (winnings > 0) {
-		return channelMessage(
-			`You rolled ${randomNumber} and gained ${winnings} :coin:!\nYour new balance is ${newBalance} :coin:`
-		);
+		return channelMessage(`You rolled ${randomNumber} and gained ${winnings} :coin:!\nYour new balance is ${newBalance.toLocaleString()} :coin:`);
 	}
 
 	ctx.waitUntil(updateGuildUserBalance(env, msg.guild_id, msg.member?.user.id, winnings));
-
-	return channelMessage(
-		`You rolled ${randomNumber} and lost ${winnings} :coin:!\nYour new balance is ${newBalance} :coin:`
-	);
+	return channelMessage(`You rolled ${randomNumber} and lost ${winnings} :coin:!\nYour new balance is ${newBalance.toLocaleString()} :coin:`);
 }
