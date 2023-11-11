@@ -162,7 +162,7 @@ export async function roulette(msg: DiscordMessage, env: Env, ctx: ExecutionCont
 		);
 	}
 
-	await updateGuildUserBalance(env, msg.guild_id, msg.member?.user.id, winnings);
+	ctx.waitUntil(updateGuildUserBalance(env, msg.guild_id, msg.member?.user.id, winnings));
 
 	return channelMessage(
 		`You rolled ${randomNumber} and lost ${winnings} :coin: with a ${bet.name} bet!\n\nYour new balance is ${newBalance} :coin:`

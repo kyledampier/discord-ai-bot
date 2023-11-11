@@ -8,6 +8,7 @@ import {
 	TransferConfig,
 	LeaderboardConfig,
 	RoastConfig,
+	RouletteConfig
 } from '../../commands/index';
 import { CommandConfig } from '../../types';
 
@@ -20,6 +21,7 @@ commands.set('generate', GenerateConfig);
 commands.set('transfer', TransferConfig);
 commands.set('leaderboard', LeaderboardConfig);
 commands.set('roast', RoastConfig);
+commands.set('roulette', RouletteConfig);
 
 export default async function registerCommands(command: string, env: Env) {
 	const cmd = commands.get(command);
