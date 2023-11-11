@@ -1,5 +1,5 @@
 import { InteractionType, verifyKey } from 'discord-interactions';
-import { pong, redeem, balance, trivia, generate, transfer, leaderboard, roast } from './commands';
+import { pong, redeem, balance, trivia, generate, transfer, leaderboard, roast, roulette } from './commands';
 import { DiscordMessage } from './types';
 import { challengerResponse } from './commands/challengerResponse';
 import router from './api/router';
@@ -106,6 +106,10 @@ export default {
 
 			if (message.data.name === 'transfer') {
 				return transfer(message, env, ctx);
+			}
+
+			if (message.data.name === 'roulette') {
+				return roulette(message, env, ctx);
 			}
 		}
 

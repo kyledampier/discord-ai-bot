@@ -144,6 +144,8 @@ export async function roulette(msg: DiscordMessage, env: Env, ctx: ExecutionCont
 	const betType = input.bet_type as string;
 	const bet = betTypes.find((b) => b.name === betType);
 
+	console.log(betType, betAmount);
+
 	if (!bet) {
 		return channelMessage(`Invalid bet type. Valid bet types are: ${betTypes.map((b) => b.name).join(', ')}`);
 	}
