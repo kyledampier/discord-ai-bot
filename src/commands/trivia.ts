@@ -119,7 +119,13 @@ export async function trivia(msg: DiscordMessage, env: Env, ctx: ExecutionContex
 		return channelMessage(`<@!${challengerId}> does not have a balance in this server.\nPlease use \`/redeem\` to create one.`);
 	}
 
-	if (initiatorBalance.balance.balance < Number(input.wager)) {
+	const wager = Number(input.wager);
+
+	if (wager < 1) {
+		return channelMessage(`You must wager at least 1 :coin:.`);
+	}
+
+	if (initiatorBalance.balance.balance < wager) {
 		return channelMessage(`You do not have enough :coin: to wager ${input.wager}.\n
 		Your balance is ${initiatorBalance.balance.balance} :coin:.`);
 	}

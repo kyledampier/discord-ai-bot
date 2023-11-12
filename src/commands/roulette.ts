@@ -133,6 +133,10 @@ export async function roulette(msg: DiscordMessage, env: Env, ctx: ExecutionCont
 	const input = serializeInput(RouletteConfig, msg.data.options!);
 
 	const betAmount = input.bet_amount as number;
+
+	if (betAmount < 1) {
+		return channelMessage(`You can't bet less than 1 coin!`);
+	}
 	// check if bet amount is valid
 	const balanceState = await getBalanceState(env, msg.member?.user.id, msg.guild_id);
 	if (betAmount > balanceState.balance.balance) {
@@ -164,7 +168,8 @@ export async function roulette(msg: DiscordMessage, env: Env, ctx: ExecutionCont
 		);
 	}
 
-	ctx.waitUntil(updateGuildUserBalance(env, msg.guild_id, msg.member?.user.id, winnings));
+	await updateGuildUserBalance(env, msg.guild_id, msg.member?.user.id, winnings);
+
 	return channelMessage(
 		`You rolled ${randomNumber} and lost ${winnings} :coin:!\nYour new balance is ${newBalance.toLocaleString()} :coin:`
 	);
