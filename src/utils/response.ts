@@ -20,7 +20,7 @@ export function channelMessage(content: string) {
 	);
 }
 
-export function channelMessageWithComponents(data: { content?: string; components: DiscordComponent[]; embeds?: DiscordEmbed[] }) {
+export function channelMessageWithComponents(data: { content?: string; components?: DiscordComponent[]; embeds?: DiscordEmbed[] }) {
 	return new Response(
 		JSON.stringify({
 			type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,

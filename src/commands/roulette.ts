@@ -1,7 +1,7 @@
 import { DiscordMessage } from '../types';
 import { CommandConfig } from '../types/Command';
 import { updateGuildUserBalance } from '../utils/balance';
-import { channelMessage } from '../utils/response';
+import { channelMessage, channelMessageWithComponents } from '../utils/response';
 import { serializeInput } from '../utils/serialize';
 import { getBalanceState } from '../utils/states';
 
@@ -163,6 +163,45 @@ export async function roulette(msg: DiscordMessage, env: Env, ctx: ExecutionCont
 	const newBalance = balanceState.balance.balance + winnings;
 
 	if (winnings > 0) {
+		return channelMessageWithComponents({
+			embeds: [
+				{
+					title: `You rolled ${randomNumber}`,
+					description: `You won ${winnings} :coin:!`,
+					fields: [
+						{
+							name: 'Bet',
+							value: `${betType} (${bet.multiplier} to 1)`,
+							inline: true,
+						},
+						{
+							name: 'Result',
+							value: `${won ? ':white_check_mark: Won' : ':x: Lost'}`,
+							inline: true,
+						},
+						{
+							name: 'Color',
+							value: `${
+								redNumbers.includes(randomNumber)
+									? ':red_square: Red'
+									: blackNumbers.includes(randomNumber)
+									? ':black_large_square: Black'
+									: ':green_circle: Green'
+							}`,
+							inline: true,
+						},
+						{
+							name: 'New Balance',
+							value: `${newBalance.toLocaleString()} :coin:`,
+						},
+					],
+					// footer: {
+					// 	text: `Your new balance is ${newBalance.toLocaleString()} :coin:`,
+					// },
+					color: 0x5865f2,
+				},
+			],
+		});
 		return channelMessage(
 			`You rolled ${randomNumber} and gained ${winnings} :coin:!\nYour new balance is ${newBalance.toLocaleString()} :coin:`
 		);
