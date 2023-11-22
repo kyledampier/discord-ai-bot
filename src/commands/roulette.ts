@@ -171,13 +171,13 @@ export async function roulette(msg: DiscordMessage, env: Env, ctx: ExecutionCont
 				description: `You ${won ? 'gained' : 'lost'} ${winnings} :coin:!`,
 				fields: [
 					{
-						name: 'Bet',
-						value: RouletteConfig.options![1].choices!.find((c) => c.value === betType)?.name ?? 'Unknown',
+						name: 'Result',
+						value: `${won ? ':white_check_mark: Won' : ':x: Lost'}`,
 						inline: true,
 					},
 					{
-						name: 'Result',
-						value: `${won ? ':white_check_mark: Won' : ':x: Lost'}`,
+						name: 'Bet',
+						value: RouletteConfig.options![1].choices!.find((c) => c.value === betType)?.name ?? 'Unknown',
 						inline: true,
 					},
 					{
@@ -193,7 +193,7 @@ export async function roulette(msg: DiscordMessage, env: Env, ctx: ExecutionCont
 					},
 				],
 				footer: {
-					text: `Your new balance is ${newBalance.toLocaleString()} :coin:`,
+					text: `Your new balance is ${newBalance.toLocaleString()}`,
 				},
 				color: won ? 0x37ff77 : 0xff3555,
 			},
