@@ -26,7 +26,7 @@ const MONTH = DAY * 30;
 
 function getDiscordRelativeTime(time: Date) {
 	const timestamp_sec = time.getTime() / 1000;
-	return `<t:${timestamp_sec}:R>`;
+	return `<t:${Math.ceil(timestamp_sec)}:R>`;
 }
 
 export async function redeem(msg: DiscordMessage, env: Env, ctx: ExecutionContext) {
