@@ -25,9 +25,6 @@ const WEEK = DAY * 7;
 const MONTH = DAY * 30;
 
 function getDiscordRelativeTime(time: Date) {
-	// const timestamp_sec = time.getTime() / 1000;
-	// return `<t:${Math.ceil(timestamp_sec)}:R>`;
-
 	const timediff = time.getTime() - Date.now();
 
 	const timeLeft = {
@@ -41,16 +38,16 @@ function getDiscordRelativeTime(time: Date) {
 	let hasDays = false;
 
 	if (timeLeft.days > 0) {
-		timeString += `${timeString.length > 0 ? ', ' : ''}${timeLeft.days} day${timeLeft.days > 1 ? 's' : ''}`;
+		timeString += `${timeString.length > 0 ? ' ' : ''}${timeLeft.days} day${timeLeft.days > 1 ? 's' : ''}`;
 		hasDays = true;
 	}
 
 	if (timeLeft.hours > 0 || hasDays) {
-		timeString += `${timeString.length > 0 ? ', ' : ''}${timeLeft.hours} hour${timeLeft.hours > 1 ? 's' : ''}`;
+		timeString += `${timeString.length > 0 ? ' ' : ''}${timeLeft.hours} hour${timeLeft.hours > 1 ? 's' : ''}`;
 	}
 
-	timeString += `${timeString.length > 0 ? ', ' : ''}${timeLeft.minutes} min${timeLeft.minutes > 1 ? 's' : ''}`;
-	timeString += `${timeString.length > 0 ? ', ' : ''}${timeLeft.seconds} sec${timeLeft.seconds > 1 ? 's' : ''}`;
+	timeString += `${timeString.length > 0 ? ' ' : ''}${timeLeft.minutes} min${timeLeft.minutes > 1 ? 's' : ''}`;
+	timeString += `${timeString.length > 0 ? ' ' : ''}${timeLeft.seconds} sec${timeLeft.seconds > 1 ? 's' : ''}`;
 
 	return timeString;
 }
