@@ -25,8 +25,34 @@ const WEEK = DAY * 7;
 const MONTH = DAY * 30;
 
 function getDiscordRelativeTime(time: Date) {
-	const timestamp_sec = time.getTime() / 1000;
-	return `<t:${Math.ceil(timestamp_sec)}:R>`;
+	// const timestamp_sec = time.getTime() / 1000;
+	// return `<t:${Math.ceil(timestamp_sec)}:R>`;
+
+	const timediff = time.getTime() - Date.now();
+
+	const timeLeft = {
+		days: Math.floor((timediff % WEEK) / DAY),
+		hours: Math.floor((timediff % DAY) / HOUR),
+		minutes: Math.floor((timediff % HOUR) / (1000 * 60)),
+		seconds: Math.floor((timediff % (1000 * 60)) / 1000),
+	};
+
+	let timeString = '';
+	let hasDays = false;
+
+	if (timeLeft.days > 0) {
+		timeString += `${timeString.length > 0 ? ', ' : ''}${timeLeft.days} day${timeLeft.days > 1 ? 's' : ''}`;
+		hasDays = true;
+	}
+
+	if (timeLeft.hours > 0 || hasDays) {
+		timeString += `${timeString.length > 0 ? ', ' : ''}${timeLeft.hours} hour${timeLeft.hours > 1 ? 's' : ''}`;
+	}
+
+	timeString += `${timeString.length > 0 ? ', ' : ''}${timeLeft.minutes} min${timeLeft.minutes > 1 ? 's' : ''}`;
+	timeString += `${timeString.length > 0 ? ', ' : ''}${timeLeft.seconds} sec${timeLeft.seconds > 1 ? 's' : ''}`;
+
+	return timeString;
 }
 
 export async function redeem(msg: DiscordMessage, env: Env, ctx: ExecutionContext) {
@@ -101,13 +127,13 @@ export async function redeem(msg: DiscordMessage, env: Env, ctx: ExecutionContex
 		timeUntilFields.push({
 			name: 'Hourly',
 			value: `${redeemPointConfig.hourly.toLocaleString(locale)} :coin:`,
-			inline: true,
+			inline: false,
 		});
 	} else {
 		timeUntilFields.push({
 			name: 'Hourly',
 			value: getDiscordRelativeTime(new Date(userState.balance.last_hourly.getTime() + HOUR)),
-			inline: true,
+			inline: false,
 		});
 	}
 
@@ -118,13 +144,13 @@ export async function redeem(msg: DiscordMessage, env: Env, ctx: ExecutionContex
 		timeUntilFields.push({
 			name: 'Daily',
 			value: `${redeemPointConfig.daily.toLocaleString(locale)} :coin:`,
-			inline: true,
+			inline: false,
 		});
 	} else {
 		timeUntilFields.push({
 			name: 'Daily',
 			value: getDiscordRelativeTime(new Date(userState.balance.last_daily.getTime() + DAY)),
-			inline: true,
+			inline: false,
 		});
 	}
 
@@ -135,13 +161,13 @@ export async function redeem(msg: DiscordMessage, env: Env, ctx: ExecutionContex
 		timeUntilFields.push({
 			name: 'Weekly',
 			value: `${redeemPointConfig.weekly.toLocaleString(locale)} :coin:`,
-			inline: true,
+			inline: false,
 		});
 	} else {
 		timeUntilFields.push({
 			name: 'Weekly',
 			value: getDiscordRelativeTime(new Date(userState.balance.last_weekly.getTime() + WEEK)),
-			inline: true,
+			inline: false,
 		});
 	}
 
@@ -152,13 +178,13 @@ export async function redeem(msg: DiscordMessage, env: Env, ctx: ExecutionContex
 		timeUntilFields.push({
 			name: 'Monthly',
 			value: `${redeemPointConfig.monthly.toLocaleString(locale)} :coin:`,
-			inline: true,
+			inline: false,
 		});
 	} else {
 		timeUntilFields.push({
 			name: 'Monthly',
 			value: getDiscordRelativeTime(new Date(userState.balance.last_monthly.getTime() + MONTH)),
-			inline: true,
+			inline: false,
 		});
 	}
 
@@ -181,7 +207,7 @@ export async function redeem(msg: DiscordMessage, env: Env, ctx: ExecutionContex
 					text: `Your new balance is ${userState.balance.balance.toLocaleString(locale)}`,
 				},
 				fields: timeUntilFields,
-				color: 0x9656ce,
+				color: 0x99AAB5,
 			},
 		],
 	});
