@@ -28,7 +28,7 @@ function getDiscordRelativeTime(time: Date) {
 	const timediff = time.getTime() - Date.now();
 
 	const timeLeft = {
-		days: Math.floor((timediff % WEEK) / DAY),
+		days: Math.floor((timediff) / DAY),
 		hours: Math.floor((timediff % DAY) / HOUR),
 		minutes: Math.floor((timediff % HOUR) / (1000 * 60)),
 		seconds: Math.floor((timediff % (1000 * 60)) / 1000),
