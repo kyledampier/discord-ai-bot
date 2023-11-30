@@ -26,6 +26,8 @@ export async function getNewQuestion(env: Env, challenge_id: number, question_nu
 		throw new Error("No questions found");
 	}
 
+	console.log(questionQuery);
+
 	const output = {
 		...questionQuery,
 		answers: shuffleArray<Answer>(questionQuery.answers),
