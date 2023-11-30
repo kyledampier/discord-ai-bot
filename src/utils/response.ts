@@ -52,8 +52,6 @@ export function getQuestionEmbedAndComponents(
 	let userStateChallenger = ':white_large_square:';
 	let notAllAnswered = state === undefined || state.initiator === 'unanswered' || state.challenger === 'unanswered';
 
-	console.log('notAllAnswered', notAllAnswered);
-
 	if (state) {
 		if (state.initiator === 'correct') userStateInitiator = ':white_check_mark:';
 		if (state.initiator === 'incorrect') userStateInitiator = ':x:';
@@ -62,6 +60,8 @@ export function getQuestionEmbedAndComponents(
 		if (state.challenger === 'incorrect') userStateChallenger = ':x:';
 	}
 	const userStateDescription = `${userStateInitiator} <@!${challenge.initiator_id}>\n${userStateChallenger} <@!${challenge.challenger_id}>`;
+
+	console.log('question', question);
 
 	const embedQuestion: DiscordEmbed = {
 		color: 0x5865f2,

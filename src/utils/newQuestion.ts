@@ -1,7 +1,7 @@
-import { eq } from "drizzle-orm";
-import getDb, { Answer } from "./db";
-import { challenge, question } from "../schema";
-import { shuffleArray } from "./shuffleArray";
+import { eq } from 'drizzle-orm';
+import getDb, { Answer } from './db';
+import { challenge, question } from '../schema';
+import { shuffleArray } from './shuffleArray';
 
 export async function getNewQuestion(env: Env, challenge_id: number, question_num = 0, category_id?: number) {
 	const db = getDb(env);
@@ -9,7 +9,7 @@ export async function getNewQuestion(env: Env, challenge_id: number, question_nu
 	// Get random question
 	const randomSelect = await env.DB.prepare(`SELECT * FROM questions ORDER BY random() LIMIT 1;`).run();
 	if (!randomSelect || !randomSelect.results.length) {
-		throw new Error("No questions found");
+		throw new Error('No questions found');
 	}
 	const questionId = Number(randomSelect.results[0].id);
 
@@ -19,14 +19,12 @@ export async function getNewQuestion(env: Env, challenge_id: number, question_nu
 		with: {
 			answers: true,
 			category: true,
-		}
+		},
 	});
 
 	if (!questionQuery) {
-		throw new Error("No questions found");
+		throw new Error('No questions found');
 	}
-
-	console.log(questionQuery);
 
 	const output = {
 		...questionQuery,
