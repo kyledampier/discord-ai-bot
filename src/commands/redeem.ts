@@ -204,7 +204,7 @@ export async function redeem(msg: DiscordMessage, env: Env, ctx: ExecutionContex
 					text: `Your new balance is ${userState.balance.balance.toLocaleString(locale)}`,
 				},
 				fields: timeUntilFields,
-				color: 0x99AAB5,
+				color: 0xDCAC37,
 			},
 		],
 	});
